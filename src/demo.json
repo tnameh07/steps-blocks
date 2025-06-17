@@ -1,0 +1,126 @@
+{
+    "schema": {
+      "id": "form_id",
+      "title": "Custom User Form",
+      "description": "A fully customizable user configuration form",
+      "version": "1.0",
+      "layout": "vertical"
+    },
+    "fields": [
+      {
+        "id": "username",
+        "type": "INPUT",
+        "inputType": "text",
+        "title": "Username",
+        "placeholder": "Enter your username",
+        "required": true
+      },
+      {
+        "id": "password",
+        "type": "INPUT",
+        "inputType": "password",
+        "title": "Password",
+        "required": true
+      },
+      {
+        "id": "bio",
+        "type": "TEXTAREA",
+        "title": "Bio",
+        "placeholder": "Tell us about yourself"
+      },
+      {
+        "id": "age",
+        "type": "INPUT",
+        "inputType": "number",
+        "title": "Age",
+        "min": 0,
+        "max": 120
+      },
+      {
+        "id": "gender",
+        "type": "RADIO",
+        "title": "Gender",
+        "options": [
+          { "label": "Male", "value": "male" },
+          { "label": "Female", "value": "female" },
+          { "label": "Other", "value": "other" }
+        ]
+      },
+      {
+        "id": "interests",
+        "type": "MULTISELECT",
+        "title": "Interests",
+        "options": [
+          { "label": "Music", "value": "music" },
+          { "label": "Sports", "value": "sports" },
+          { "label": "Tech", "value": "tech" }
+        ]
+      },
+  
+      {
+        "id": "contact",
+        "type": "INPUT_GROUP",
+        "title": "Contact Information",
+        "fields": [
+          {
+            "id": "email",
+            "type": "INPUT",
+            "inputType": "email",
+            "title": "Email",
+            "required": true
+          },
+          {
+            "id": "phone",
+            "type": "INPUT",
+            "inputType": "tel",
+            "title": "Phone Number"
+          }
+        ]
+      },
+      {
+        "id": "addresses",
+        "type": "REPEATER",
+        "title": "Addresses",
+        "fields": [
+          {
+            "id": "address_line",
+            "type": "INPUT",
+            "inputType": "text",
+            "title": "Address Line"
+          },
+          {
+            "id": "city",
+            "type": "INPUT",
+            "inputType": "text",
+            "title": "City"
+          }
+        ]
+      },
+      {
+        "id": "hidden_field",
+        "type": "HIDDEN",
+        "defaultValue": "hiddenValue"
+      },
+      {
+        "id": "terms",
+        "type": "SWITCH",
+        "title": "Accept Terms and Conditions",
+        "required": true
+      }
+    ],
+    "conditions": [
+      {
+        "when": { "field": "country", "operator": "equals", "value": "IN" },
+        "then": { "show": ["state"], "require": ["state"] }
+      }
+    ],
+    "validation": {
+      "crossField": [
+        {
+          "fields": ["start_date", "end_date"],
+          "rule": "start_date < end_date",
+          "message": "Start date must be before end date"
+        }
+      ]
+    }
+  }
