@@ -1,183 +1,11 @@
-import React, { useState } from 'react'
-
-
-
-const defaultInputGroups = [
-  {
-    id: "personal-info",
-    type: "section",
-    label: "Personal Info",
-    description: "Your basic details",
-    children: [
-      {
-        id: "full-name",
-        key: "fullName",
-        type: "text",
-        inputType: "text",
-        label: "Full Name",
-        placeholder: "John Doe",
-        required: true,
-        validation: { minLength: 2, maxLength: 50 }
-      },
-      {
-        id: "nested-group",
-        key: "nestedGroup",
-        type: "group",
-        label: "Nested Group",
-        children: [
-            
-{
-  id: "child1",
-  key: "child1",
-  type: "select",
-  label: "Child 1",
-  options: [
-    { value: "optin", label: "Email" },
-    { value: "phone", label: "Phone" },
-    { value: "mail", label: "Mail" }
-  ],
-  required: true,
-  visibleIf: {
-    field: "subscribe",
-    operator: "equals",
-    value: true
-  }
-},
-{
-  id: "child2",
-  key: "child2",
-  type: "text",
-  inputType: "text",
-  label: "Child 2",
-  placeholder: "Enter child 2 value"
-},
-        ]
-    },
-    {
-      id: "email",
-      key: "email",
-      type: "text",
-      inputType: "email",
-      label: "Email",
-      placeholder: "john@example.com",
-      required: true,
-      validation: {
-        pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
-      }
-    },
-    {
-      id: "gender",
-      key: "gender",
-      type: "radio",
-      label: "Gender",
-      options: [
-        { value: "male", label: "Male" },
-        { value: "female", label: "Female" },
-        { value: "other", label: "Other" }
-      ]
-    },
-    {
-      id: "subscribe",
-      key: "subscribe",
-      type: "checkbox",
-      label: "Subscribe to newsletter",
-      defaultValue: false
-    },
-    {
-      id: "contact-method",
-      key: "contactMethod",
-      type: "select",
-      label: "Preferred Contact",
-      options: [
-        { value: "email", label: "Email" },
-        { value: "phone", label: "Phone" },
-        { value: "mail", label: "Mail" }
-      ],
-      required: true,
-      visibleIf: {
-        field: "subscribe",
-        operator: "equals",
-        value: true
-      }
-    },
-    ]
-  },
-  {
-    id: "address-info",
-    type: "group",
-    label: "Address",
-    children: [
-      {
-        id: "street",
-        key: "street",
-        type: "text",
-        inputType: "text",
-        label: "Street",
-        placeholder: "123 Main St"
-      },
-      {
-        id: "city",
-        key: "city",
-        type: "text",
-        inputType: "text",
-        label: "City",
-        placeholder: "Anytown"
-      },
-      {
-        id: "zip",
-        key: "zip",
-        type: "text",
-        inputType: "number",
-        label: "ZIP",
-        placeholder: "12345"
-      },
-    ]
-  },
-  {
-    id: "work-experience",
-    type: "repeater",
-    label: "Work Experience",
-    description: "List of past jobs",
-    children: [
-      {
-        id: "company",
-        key: "company",
-        type: "text",
-        inputType: "text",
-        label: "Company",
-        required: true
-      },
-      {
-        id: "job-title",
-        key: "role",
-        type: "text",
-        inputType: "text",
-        label: "Role",
-        required: true
-      },
-      {
-        id: "start",
-        key: "startDate",
-        type: "text",
-        inputType: "date",
-        label: "Start Date"
-      },
-      {
-        id: "end",
-        key: "endDate",
-        type: "text",
-        inputType: "date",
-        label: "End Date"
-      }
-    ]
-  },
-
-];
+import React, { useEffect, useState } from 'react'
+import { defaultInputGroups, creatingBlock, creatingFirstSequence, changeSequence } from './utility.js';
 
 
 const Form = () => {
   const [jsonText, setJsonText] = useState(JSON.stringify(defaultInputGroups, null, 2));
   const [inputGroups, setInputGroups] = useState(defaultInputGroups);
+  const [stepsBlocksData, setStepsBlocksData] = useState(null);
   const [jsonError, setJsonError] = useState(null);
   const [formValues, setFormValues] = useState({}); // New state for form values
 
@@ -203,56 +31,30 @@ const Form = () => {
     }));
   };
 
+  // const data = stepsBlocksData ? changeSequence(stepsBlocksData,"personal-info", 0, "personal-info.email") : null;
+  // console.log("DATA:", data);
+  
+
+useEffect(()=>{
+
   const blocks = creatingBlock(inputGroups, "");
   const sequence = creatingFirstSequence(inputGroups);
 
-  const finaljson = {
-    title: "Dynamic Form Preview", // A title for the form
+  const finaljsona = { 
+    title: "Dynamic Form Preview",
     steps: sequence,
-    blocks: blocks
-  };
+    blocks: blocks }
+  setStepsBlocksData(finaljsona);
+  console.log("FINAL JSON:", finaljsona);
 
-  // console.log("=== TRANSFORMED STRUCTURE ===");
-  // console.log("STEPS (Sequence):", JSON.stringify(sequence, null, 2));
-  // console.log("BLOCKS (Flat Map):", JSON.stringify(blocks, null, 2));
-  console.log("FINAL JSON:", finaljson);
+}, [inputGroups]);
 
-  function renderFormFromFinalJson(finaljson) {
-    if (!finaljson || !finaljson.steps || !finaljson.blocks) return null;
+  function previewForm(stepsBlocksData) {
+    if (!stepsBlocksData || !stepsBlocksData.steps || !stepsBlocksData.blocks) return null;
 
-    function checkCondition(visibleIf) {
-      if (!visibleIf) return true;
-      const { field: targetFieldId, operator, value: expectedValue } = visibleIf;
-      const targetField = finaljson.blocks[targetFieldId];
-
-      if (!targetField) {
-        console.warn(`VisibleIf: Target field ID '${targetFieldId}' not found.`);
-        return false;
-      }
-
-      const currentFieldValue = formValues[targetField.key]; // Use the 'key' for formValues lookup
-
-      switch (operator) {
-        case 'equals':
-          return currentFieldValue === expectedValue;
-        case 'not_equals':
-          return currentFieldValue !== expectedValue;
-        case 'is_checked': // For checkboxes
-          return !!currentFieldValue;
-        case 'is_not_checked':
-          return !currentFieldValue;
-        // Add more operators as needed (e.g., 'greater_than', 'less_than')
-        default:
-          return true;
-      }
-    }
 
     // Render individual input fields
-    function renderField(element) {
-      // console.log("element :" , element)
-      // if (!checkCondition(element.visibleIf)) {
-      //   return null; // Don't render if condition is false
-      // }
+    function renderField(element, index) {
 
       switch (element.type) {
         case 'text':
@@ -267,9 +69,11 @@ const Form = () => {
                 required={element.required}
                 value={formValues[element.key] || ''}
                 onChange={(e) => handleInputChange(e, element.key)}
-                style={{ width: '100%', padding: 8, border: '1px solid #ccc', borderRadius: 4 }}
-              />
-              {element.description && <p style={{ fontSize: '0.8em', color: '#888', marginTop: 4 }}>{element.description}</p>}
+                style={{ width: '70%', padding: 8, border: '1px solid #ccc', borderRadius: 4 }}
+              />  
+                  <button onClick={() =>{changeSequence(stepsBlocksData, parent_id, index, element.id)}}>↑</button>
+              <button onClick={() => {}}>↓</button>
+              {element.description && <p style={{ fontSize: '0.8em', color: '#888', marginTop: 4 }}>r</p>}
             </div>
           );
         case 'radio':
@@ -290,7 +94,10 @@ const Form = () => {
                     />
                     {opt.label}
                   </label>
+                  
                 ))}
+                 <button onClick={() => {}}>↑</button>
+                 <button onClick={() => {}}>↓</button>
               </div>
             </div>
           );
@@ -306,6 +113,8 @@ const Form = () => {
                 />
                 {element.label} {element.required && <span style={{ color: 'red' }}>*</span>}
               </label>
+              <button onClick={() => {}}>↑</button>
+              <button onClick={() => {}}>↓</button>
             </div>
           );
         case 'select':
@@ -326,6 +135,8 @@ const Form = () => {
                   </option>
                 ))}
               </select>
+              <button onClick={() => {}}>↑</button>
+              <button onClick={() => {}}>↓</button>
             </div>
           );
         default:
@@ -338,9 +149,9 @@ const Form = () => {
     }
 
     // Render groups, sections, and repeaters
-    function renderGroup(elementId) {
+    function renderGroup(elementId, index) {
       console.log("elementId :" , elementId)
-      const element = finaljson.blocks[elementId];
+      const element = stepsBlocksData.blocks[elementId];
       console.log("element found:", element);
       if (!element) {
         console.warn(`Element with ID '${elementId}' not found in blocks.`);
@@ -349,7 +160,7 @@ const Form = () => {
 
       // If it's a field (not a container), render it directly
       if (element.type === 'text' || element.type === 'radio' || element.type === 'checkbox' || element.type === 'select') {
-        return renderField(element);
+        return renderField(element,index);
       }
 
       // Handle container types (section, group, repeater)
@@ -357,19 +168,25 @@ const Form = () => {
         case 'section':
           return (
             <div key={element.id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, marginBottom: 16 }}>
-              <h4 style={{ marginTop: 0, marginBottom: 12 }}>{element.label}</h4>
+              <h4 style={{ marginTop: 0, marginBottom: 12 }}>{element.label}</h4> 
+              {/* <button onClick={() => {}}>↑</button> */}
               {element.description && <p style={{ fontSize: '0.9em', color: '#666' }}>{element.description}</p>}
               <div style={{ paddingLeft: 8 }}>
-                {element.children && element.children.map(childId => renderGroup(childId))}
+                {element.children && element.children.map((childId, index) => renderGroup(childId, index))}
               </div>
             </div>
           );
         case 'group':
           return (
-            <div key={element.id} style={{ marginLeft: 16, marginBottom: 8, borderLeft: '2px solid #eee', paddingLeft: 8 }}>
+            <div key={element.id} 
+            // style={{ marginLeft: 16, marginBottom: 8, borderLeft: '2px solid #eee', paddingLeft: 8 }}
+            style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, marginBottom: 16 }}
+            >
               <label style={{ fontWeight: 'bold' }}>{element.label}</label>
+              <button onClick={() => {}}>↑</button>
+              <button onClick={() => {}}>↓</button>
               <div style={{ marginTop: 4 }}>
-                {element.children && element.children.map(childId => renderGroup(childId))}
+                {element.children && element.children.map((childId, index) => renderGroup(childId, index))}
               </div>
             </div>
           );
@@ -396,7 +213,7 @@ const Form = () => {
 
     return (
       <form>
-        {finaljson.steps.root.map(rootId => renderGroup(rootId))}
+        {stepsBlocksData.steps.root.map((rootId, index) => renderGroup(rootId, index))}
       </form>
     );
   }
@@ -414,95 +231,120 @@ const Form = () => {
         {jsonError && <div style={{ color: 'red', marginTop: 4 }}>Invalid JSON: {jsonError}</div>}
       </div>
       {/* Preview Form Block */}
-      <div style={{ flex: 1, background: '#fafafa', borderRadius: 8, padding: 16, overflowY: 'auto', boxShadow: '0 2px 8px #0001' }}>
-        <h3>Preview Form ({finaljson.title})</h3>
-        {renderFormFromFinalJson(finaljson)}
+      {
+        stepsBlocksData ?  <div style={{ flex: 1, background: '#fafafa', borderRadius: 8, padding: 16, overflowY: 'auto', boxShadow: '0 2px 8px #0001' }}>
+        <h3>Preview Form ({stepsBlocksData.title})</h3>
+        {previewForm(stepsBlocksData)}
         {/* <h4 style={{ marginTop: 24 }}>Form Values</h4>
         <pre style={{ background: '#f4f4f4', padding: 8, borderRadius: 4, fontSize: 13 }}>
           {JSON.stringify(formValues, null, 2)}
         </pre> */}
         <h4 style={{ marginTop: 24 }}>Transformed Steps & Blocks</h4>
         <pre style={{ background: '#f0f8ff', padding: 8, borderRadius: 4, fontSize: 12, maxHeight: 200, overflowY: 'auto' }}>
-          {JSON.stringify(finaljson, null, 2)}
+          {JSON.stringify(stepsBlocksData, null, 2)}
         </pre>
         {/* <h4 style={{ marginTop: 16 }}>Transformed Blocks (Sample)</h4>
         <pre style={{ background: '#fff8f0', padding: 8, borderRadius: 4, fontSize: 12, maxHeight: 300, overflowY: 'auto' }}>
           {JSON.stringify(Object.fromEntries(Object.entries(blocks).slice(0, 5)), null, 2)}
         </pre> */}
-      </div>
+      </div> : <p>Loading...</p>
+      }
+     
     </div>
   );
 };
 
 export default Form
 
-// function creatingFirstSequence(groups) {
-//   let sequence = { root: [] };
-//   // Collect top-level section, group, and repeater IDs
-//   groups.forEach(item => {
-//     if (item.type === "section" || item.type === "group" || item.type === "repeater") {
-//       sequence.root.push(item.id);
+
+//   const result = {};
+//   for (const group of groups) {
+//     let fullKey;
+//     if(parentKey){
+//         fullKey = `${parentKey}.${group.id}`;
+//     }else{
+//         fullKey = group.id;
 //     }
-//   });
-//   return sequence;
+//     // Base map of the group
+//     const map = {
+//       id: group.id,
+//       label: group.label,
+//       type: group.type,
+//       key: group.key,
+//       description: group.description,
+//       placeholder: group.placeholder,
+//       required: group.required,
+//       validation: group.validation,
+//       options: group.options,
+//       inputType: group.inputType,
+//       visibleIf: group.visibleIf,
+//       defaultValue: group.defaultValue
+//     };
+//     // Handle children recursively
+//     if (group.children) {
+//       map.children = group.children.map(function(child){
+//         return `${fullKey}.${child.id}`;  //  Store full paths
+//       });
+//       result[fullKey] = map;
+//       // Recursively flatten the children
+//       Object.assign(result, creatingBlock(group.children, fullKey));
+//     } else {
+//       result[fullKey] = map;
+//     }
+//   }
+//   return result;
 // }
 
-function creatingBlock(groups, parentKey) {
-  const result = {};
-  for (const group of groups) {
-    let fullKey;
-    if(parentKey){
-        fullKey = `${parentKey}.${group.id}`;
-    }else{
-        fullKey = group.id;
-    }
-    // Base map of the group
-    const map = {
-      id: group.id,
-      label: group.label,
-      type: group.type,
-      key: group.key,
-      description: group.description,
-      placeholder: group.placeholder,
-      required: group.required,
-      validation: group.validation,
-      options: group.options,
-      inputType: group.inputType,
-      visibleIf: group.visibleIf,
-      defaultValue: group.defaultValue
-    };
-    // Handle children recursively
-    if (group.children) {
-      map.children = group.children.map(function(child){
-        return `${fullKey}.${child.id}`;  //  Store full paths
-      });
-      result[fullKey] = map;
-      // Recursively flatten the children
-      Object.assign(result, creatingBlock(group.children, fullKey));
-    } else {
-      result[fullKey] = map;
-    }
-  }
-  return result;
-}
+// function creatingFirstSequence(groups){
+//     let sequence = {};
+//     let root = [];
+//     root = groups.map(function(child){
+//         return child.id;
+//     })
+//     sequence.root = root;
+//     //recursively adding children
+//      function collectChildren(groups, parentKey) {
+//         for (const group of groups) {
+//             const fullKey = parentKey ? `${parentKey}.${group.id}` : group.id;
+//             if (group.children) {
+//                 sequence[fullKey] = group.children.map(child => `${fullKey}.${child.id}`);
+//                 collectChildren(group.children, fullKey);
+//             }
+//         }
+//     }
+//     collectChildren(groups, "");
+//     return sequence;
+// }
 
-function creatingFirstSequence(groups){
-    let sequence = {};
-    let root = [];
-    root = groups.map(function(child){
-        return child.id;
-    })
-    sequence.root = root;
-    //recursively adding children
-     function collectChildren(groups, parentKey) {
-        for (const group of groups) {
-            const fullKey = parentKey ? `${parentKey}.${group.id}` : group.id;
-            if (group.children) {
-                sequence[group.id] = group.children.map(child => `${fullKey}.${child.id}`);
-                collectChildren(group.children, fullKey);
-            }
-        }
-    }
-    collectChildren(groups, "");
-    return sequence;
-}
+// function changeSequence(stepsBlocksData, group_id, newIndex, field_id) {
+//   const stepsGroup = stepsBlocksData.steps[group_id] ? stepsBlocksData.steps[group_id] : null;
+//   const blocksGroup = stepsBlocksData.blocks[group_id] ? stepsBlocksData.blocks[group_id] : null;
+
+//   console.log(stepsGroup , "   :  " ,blocksGroup)
+//   if (!stepsGroup || !blocksGroup || !blocksGroup.children) {
+//     console.error("Invalid group ID or group structure.");
+//     return;
+//   }
+
+//   const currentIndex = stepsGroup.indexOf(field_id);
+// console.log(currentIndex)
+//   if (currentIndex === -1) {
+//     console.error("Field not found in the specified group.");
+//     return;
+//   }
+
+//   // Remove field_id from current position
+//   stepsGroup.splice(currentIndex, 1);
+//   blocksGroup.children.splice(currentIndex, 1);
+
+//   // Clamp newIndex to valid range
+//   const clampedIndex = Math.min(Math.max(newIndex, 0), stepsGroup.length);
+
+//   // Insert field_id at newIndex
+//   stepsGroup.splice(clampedIndex, 0, field_id);
+//   blocksGroup.children.splice(clampedIndex, 0, field_id);
+
+//   console.log(`Updated order in group "${group_id}":`, stepsGroup);
+// }
+
+// changeSequence("personal-info", 0, "personal-info.email");
