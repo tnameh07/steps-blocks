@@ -8,7 +8,10 @@ const Form = () => {
     const [stepsBlocksData, setStepsBlocksData] = useState(null);
     const [jsonError, setJsonError] = useState(null);
     const [formValues, setFormValues] = useState({});
-  
+     const [editData, setEditData] = useState(null); // Add this if not already present
+      const [editPath, setEditPath] = useState(null); // Add this if not already present
+      // const [showEditModal, setShowEditModal] = useState(false); // Add this too
+  const [showEditModal, setShowEditModal] = useState(false);
     // Parse JSON editor input
     const handleJsonChange = (e) => {
       const value = e.target.value;
@@ -21,7 +24,7 @@ const Form = () => {
         setJsonError(err.message);
       }
     };
-  
+  console.log("showEditModal :", showEditModal)
     // Handle input changes for form fields
     const handleInputChange = (e, fieldKey) => {
       const { type, name, value, checked } = e.target;
@@ -31,67 +34,6 @@ const Form = () => {
       }));
     };
   
-    // FIXED: Movement logic function
-    // const changeSequence = (group_id, field_id, direction) => {
-    //     console.log("changeSequence", group_id, "  :",  field_id,  "  :  ",direction);
-    //   if (!stepsBlocksData || !stepsBlocksData.steps[group_id]) {
-    //     console.error("Invalid group ID or steps data not available.");
-    //     return;
-    //   }
-  
-    //   const stepsGroup = stepsBlocksData.steps[group_id];
-    //   const currentIndex = stepsGroup.indexOf(field_id);
-      
-    //   console.log(stepsGroup, "currentIndex", currentIndex);
-    //   if (currentIndex === -1) {
-    //     console.error("Field not found in the specified group.");
-    //     return;
-    //   }
-  
-    //   let targetIndex;
-    //   if (direction === 'up') {
-    //     targetIndex = currentIndex - 1;
-    //   } else if (direction === 'down') {
-    //     targetIndex = currentIndex + 1;
-    //   } else {
-    //     console.error("Invalid direction. Use 'up' or 'down'.");
-    //     return;
-    //   }
-  
-    //   // Check bounds
-    //   if (targetIndex < 0 || targetIndex >= stepsGroup.length) {
-    //     console.log(`Cannot move ${direction}. Already at ${direction === 'up' ? 'top' : 'bottom'}.`);
-    //     return;
-    //   }
-  
-    //   // Create new stepsBlocksData with swapped elements (immutably for both steps and blocks)
-    //   const newStepsBlocksData = {
-    //     ...stepsBlocksData,
-    //     steps: {
-    //       ...stepsBlocksData.steps,
-    //       [group_id]: [...stepsBlocksData.steps[group_id]],
-    //     },
-    //     blocks: {
-    //       ...stepsBlocksData.blocks,
-    //       [group_id]: {
-    //         ...stepsBlocksData.blocks[group_id],
-    //         children: [...(stepsBlocksData.blocks[group_id]?.children || [])],
-    //       },
-    //     },
-    //   };
-
-    //   // Swap in steps
-    //   [newStepsBlocksData.steps[group_id][currentIndex], newStepsBlocksData.steps[group_id][targetIndex]] =
-    //     [newStepsBlocksData.steps[group_id][targetIndex], newStepsBlocksData.steps[group_id][currentIndex]];
-    //   // Swap in blocks.children if present
-    //   if (newStepsBlocksData.blocks[group_id].children) {
-    //     [newStepsBlocksData.blocks[group_id].children[currentIndex], newStepsBlocksData.blocks[group_id].children[targetIndex]] =
-    //       [newStepsBlocksData.blocks[group_id].children[targetIndex], newStepsBlocksData.blocks[group_id].children[currentIndex]];
-    //   }
-
-    //   setStepsBlocksData(newStepsBlocksData);
-    //   console.log(`Moved ${field_id} ${direction} in group "${group_id}"`);
-    // };
     const changeSequence = (group_id, field_id, direction) => {
         if (!stepsBlocksData || !stepsBlocksData.steps[group_id]) return;
       
@@ -134,7 +76,73 @@ const Form = () => {
         }));
       };
       
-  
+      const handleEdit = (id) => {
+        console.log("Inside handle edit",id);
+      const block = stepsBlocksData.blocks[id]; // Get the block definition using ID
+      // console.log("Editing field:", block[id]);
+    
+      // Now open your modal/form with block’s data prefilled
+      setEditData(block);      // Store this in a state
+      setEditPath(id);         // Keep track of full path or id
+      setShowEditModal(true);  // Open modal
+    };
+
+    const handleFieldChange = (fieldKey, newValue) => {
+      console.log("dsdsdsdf",newValue);
+      console.log("dsdsdsdf",fieldKey);
+    setEditData(prev => ({
+      ...prev,
+      [fieldKey]: newValue
+    }));
+  };
+  console.log("editPath :", editPath , "editData :", editData)
+    const handleSave = () => {
+      console.log("editPath :", editPath, " ", editData)
+      if ( !editData) return;
+    console.log("editPath :", editPath, " ", editData)
+      // stepsBlocks.blocks[editData.id]
+      //  setStepsBlocksData((prev)=>{
+      //   stepsBlocksData.blocks[editPath] = editData
+      // })
+      setStepsBlocksData(prev => ({
+        ...prev,
+        blocks: {
+          ...prev.blocks,
+          [editPath]: editData
+        }
+      }));
+      
+      // const stepsblocks = {
+      //   steps,
+      //   blcoks
+      // }
+      // stepsblocks.blocks[editData.id] = editData;
+      // Deep clone inputGroups
+      // const updatedInputGroups = JSON.parse(JSON.stringify(inputGroups));
+    
+      // // Walk through the path and update the correct block
+      // const pathParts = editPath.split('.'); // e.g. personal-info.nested-group.child1
+      // let current = updatedInputGroups;
+    
+      // for (let i = 0; i < pathParts.length; i++) {
+      //   const part = pathParts[i];
+    
+      //   const match = current.find(item => item.key === part || item.id === part);
+      //   if (!match) return;
+    
+      //   if (i === pathParts.length - 1) {
+      //     // At the final block, update all keys in editData
+      //     Object.assign(match, editData);
+      //   } else {
+      //     // Go deeper into children
+      //     current = match.children;
+      //   }
+      // }
+    
+      // setInputGroups(updatedInputGroups); // This triggers re-render of preview
+      setShowEditModal(false);
+    };
+    
     useEffect(() => {
       const blocks = creatingBlock(inputGroups, "");
       const sequence = creatingFirstSequence(inputGroups);
@@ -173,6 +181,7 @@ const Form = () => {
                   onChange={(e) => handleInputChange(e, element.key)}
                   style={{ width: 'auto', padding: 8, border: '1px solid #ccc', borderRadius: 4 }}
                 />  
+                <button type="button" onClick={() => handleEdit(element.id)}>Edit</button>
                 <button 
                 type='button'
                   onClick={() => changeSequence(parentId, element.id, 'up')}
@@ -424,8 +433,81 @@ const Form = () => {
         ) : (
           <p>Loading...</p>
         )}
+        {showEditModal &&     
+        <div style={{ 
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+      backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+      display: 'flex', alignItems: 'center', justifyContent: 'center' 
+    }}>
+      <div style={{ 
+        background: '#fff', padding: 20, borderRadius: 8, width: '50%', 
+        maxHeight: '80vh', overflowY: 'auto' 
+      }}>
+        <h3>Edit Field</h3>
+        <form>
+      {Object.entries(editData).map(([key, value]) => (
+      <div key={key} style={{ marginBottom: 12 }}>
+        <label style={{ display: 'block', marginBottom: 4 }}>
+          {key}
+        </label>
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => handleFieldChange(key, e.target.value)}
+          style={{ width: '100%', padding: 8 }}
+        />
+      </div>
+    ))}
+  </form>
+        <button onClick={handleSave}>Save</button>
+        <button onClick={() => setShowEditModal(false)}>Close</button>
+      </div>
+    </div>}
       </div>
     );
   };
 
-  export default Form;  
+  export default Form; 
+  
+//   const EditModel = (editData)=>{
+//     const handleFieldChange = (fieldKey, newValue) => {
+//       console.log("dsdsdsdf",newValue);
+//       console.log("dsdsdsdf",fieldKey);
+//     setEditData(prev => ({
+//       ...prev,
+//       [fieldKey]: newValue
+//     }));
+//   };
+
+// console.log( "editData : ", editData)
+//     return 
+//     <div style={{ 
+//       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+//       backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+//       display: 'flex', alignItems: 'center', justifyContent: 'center' 
+//     }}>
+//       <div style={{ 
+//         background: '#fff', padding: 20, borderRadius: 8, width: '50%', 
+//         maxHeight: '80vh', overflowY: 'auto' 
+//       }}>
+//         <h3>Edit Field</h3>
+//         <form>
+//       {Object.entries(editData).map(([key, value]) => (
+//       <div key={key} style={{ marginBottom: 12 }}>
+//         <label style={{ display: 'block', marginBottom: 4 }}>
+//           {key}
+//         </label>
+//         <input
+//           type="text"
+//           value={value}
+//           onChange={(e) => handleFieldChange(key, e.target.value)}
+//           style={{ width: '100%', padding: 8 }}
+//         />
+//       </div>
+//     ))}
+//   </form>
+//         <button onClick={handleSave}>Save</button>
+//         <button onClick={() => setShowEditModal(false)}>Close</button>
+//       </div>
+//     </div>
+//   }
