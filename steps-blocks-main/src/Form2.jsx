@@ -75,6 +75,7 @@ const Form = () => {
             },
           },
         }));
+        setStepBlocksEdit(true);
       };
       
       const handleEdit = (id) => {
@@ -143,7 +144,7 @@ const newInputGroups = reconstructInputGroups(stepsBlocksData);
     }
   
 console.log("trigger")
-},[setStepBlocksEdit])
+},[StepBlocksEdit])
     
     useEffect(() => {
       const blocks = creatingBlock(inputGroups, "");
