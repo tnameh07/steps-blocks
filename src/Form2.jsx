@@ -12,6 +12,7 @@ const Form = () => {
       const [editPath, setEditPath] = useState(null); // Add this if not already present
       // const [showEditModal, setShowEditModal] = useState(false); // Add this too
   const [showEditModal, setShowEditModal] = useState(false);
+  console.log("Comparing");
     // Parse JSON editor input
     const handleJsonChange = (e) => {
       const value = e.target.value;
