@@ -40,6 +40,23 @@ const Form = () => {
     setEditPath(id);
     setShowEditModal(true);
   };
+
+  const checkCondition = (condition) => {
+  if (!condition) return false;
+  const { field, operator, value } = condition;
+  const targetValue = formValues[field] ?? "";
+  switch (operator) {
+    case "equals":
+      return targetValue === value;
+    case "notEquals":
+      return targetValue !== value;
+    default:
+      return false;
+  }
+};
+
+
+
   useEffect(() => {
     const blocks = creatingBlock(inputGroups, "");
     const sequence = creatingFirstSequence(inputGroups);
@@ -79,6 +96,10 @@ const Form = () => {
   };
 
   function renderField(element, parentId, currentIndex) {
+    const isVisible = !element.visibleIf || checkCondition(element.visibleIf);
+    const isDisabled = element.disabledIf && checkCondition(element.disabledIf);
+    if (!isVisible) return null;
+
     const fieldId = `${parentId}.${element.id}`;
     const canMoveUp = currentIndex > 0;
     const canMoveDown = currentIndex < (stepsBlocksData.steps[parentId]?.length - 1);
@@ -96,6 +117,7 @@ const Form = () => {
               required={element.required}
               value={formValues[element.key] || ''}
               onChange={(e) => handleInputChange(e, element.key)}
+              disabled={isDisabled}
               style={{ width: 'auto', padding: 8, border: '1px solid #ccc', borderRadius: 4 }}
             />
             <button type="button" onClick={() => handleEdit(fieldId)}>Edit</button>
@@ -132,6 +154,7 @@ const Form = () => {
                     value={opt.value}
                     checked={formValues[element.key] === opt.value}
                     onChange={(e) => handleInputChange(e, element.key)}
+                    disabled={isDisabled}
                   />
                   {opt.label}
                 </label>
@@ -163,6 +186,7 @@ const Form = () => {
                 name={element.key}
                 checked={!!formValues[element.key]}
                 onChange={(e) => handleInputChange(e, element.key)}
+                disabled={isDisabled}
               />
               {element.label} {element.required && <span style={{ color: 'red' }}>*</span>}
             </label>
@@ -192,6 +216,7 @@ const Form = () => {
             <select
               value={formValues[element.key] || ''}
               onChange={(e) => handleInputChange(e, element.key)}
+              disabled={isDisabled}
               style={{ width: 'auto', padding: 8, border: '1px solid #ccc', borderRadius: 4 }}
             >
               <option value="">Select an option</option>
@@ -232,6 +257,9 @@ const Form = () => {
     if (!element) {
       return null;
     }
+    const isVisible = !element.visibleIf || checkCondition(element.visibleIf);
+    if (!isVisible) return null;
+
     const groupId = `${parentId}-${element.id}`;
     const canMoveUp = currentIndex > 0;
     const canMoveDown = currentIndex < (stepsBlocksData.steps[parentId]?.length - 1);
