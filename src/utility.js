@@ -32,12 +32,7 @@ export const defaultInputGroups = [
     { value: "phone", label: "Phone" },
     { value: "mail", label: "Mail" }
   ],
-  required: true,
-  visibleIf: {
-    field: "subscribe",
-    operator: "equals",
-    value: true
-  }
+  required: true
 },
 {
   id: "child2",
@@ -45,7 +40,12 @@ export const defaultInputGroups = [
   type: "text",
   inputType: "text",
   label: "Child 2",
-  placeholder: "Enter child 2 value"
+  placeholder: "Enter child 2 value",
+  visibleIf: {
+    field: "child1",
+    operator: "notEquals",
+    value: ""
+  }
 },
         ]
     },
@@ -104,20 +104,25 @@ export const defaultInputGroups = [
     label: "Address",
     children: [
       {
-        id: "street",
-        key: "street",
-        type: "text",
-        inputType: "text",
-        label: "Street",
-        placeholder: "123 Main St"
-      },
-      {
         id: "city",
         key: "city",
         type: "text",
         inputType: "text",
         label: "City",
         placeholder: "Anytown"
+      },
+      {
+        id: "street",
+        key: "street",
+        type: "text",
+        inputType: "text",
+        label: "Street",
+        placeholder: "123 Main St",
+        visibleIf: {
+        field: "city",
+        operator: "notEquals",
+        value: ""
+      }
       },
       {
         id: "zip",
@@ -149,7 +154,12 @@ export const defaultInputGroups = [
         type: "text",
         inputType: "text",
         label: "Role",
-        required: true
+        required: true,
+        visibleIf: {
+        field: "company",
+        operator: "notEquals",
+        value: ""
+      }
       },
       {
         id: "start",
@@ -163,11 +173,39 @@ export const defaultInputGroups = [
         key: "endDate",
         type: "text",
         inputType: "date",
-        label: "End Date"
+        label: "End Date",
+        disabledIf: {
+        field: "startDate",
+        operator: "equals",
+        value: ""
+      }
       }
     ]
   },
-
+  {
+  id: "feedback",
+  key: "feedback",
+  type: "select",
+  label: "Feedback",
+  options: [
+    { value: "positive", label: "positive" },
+    { value: "negative", label: "negative" },
+    { value: "other", label: "other" }
+  ],
+  required: true
+},
+{
+  id: "other",
+  key: "other",
+  type: "text",
+  label: "Other :Please Specify",
+  required: true,
+  visibleIf: {
+        field: "feedback",
+        operator: "equals",
+        value: "other"
+      }
+},
 ];
 
 export function creatingBlock(groups, parentKey) {
