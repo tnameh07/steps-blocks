@@ -319,7 +319,6 @@ export function changeSequence(stepsBlocksData, setStepsBlocksData, group_id, fi
 
 export function reconstructInputGroups(stepsBlocksData) {
   const { blocks, steps } = stepsBlocksData;
-  console.log("trigger3")
   function buildGroup(key) {
     const block = blocks[key];
     const group = { ...block };
@@ -332,7 +331,6 @@ export function reconstructInputGroups(stepsBlocksData) {
 
     return group;
   }
-  console.log("trigger4", steps)
   const reconstructed = steps.root.map(rootKey => buildGroup(rootKey));
   return reconstructed;
 }
