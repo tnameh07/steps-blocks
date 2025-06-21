@@ -30,7 +30,15 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                         value={formValues[element.key] || ''}
                         onChange={(e) => handleInputChange(e, element.key)}
                         disabled={isDisabled}
-                        style={{ width: 'auto', padding: 8, border: '1px solid #ccc', borderRadius: 4 }}
+                        style={{
+                        width: 'auto',
+                        padding: 8,
+                        border: '1px solid #ccc',
+                        borderRadius: 4,
+                        cursor: element.disabledIf && isDisabled ? 'not-allowed' : 'text',
+                        borderColor: element.disabledIf && isDisabled ? 'red' : '#ccc'
+                        }}
+
                     />
                     <button type="button" onClick={() => handleEdit(fieldId)}>Edit</button>
                     <button
@@ -129,7 +137,15 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                         value={formValues[element.key] || ''}
                         onChange={(e) => handleInputChange(e, element.key)}
                         disabled={isDisabled}
-                        style={{ width: 'auto', padding: 8, border: '1px solid #ccc', borderRadius: 4 }}
+                        style={{
+                        width: 'auto',
+                        padding: 8,
+                        border: '1px solid #ccc',
+                        borderRadius: 4,
+                        cursor: element.disabledIf && isDisabled ? 'not-allowed' : 'text',
+                        borderColor: element.disabledIf && isDisabled ? 'red' : '#ccc'
+                        }}
+
                     >
                         <option value="">Select an option</option>
                         {element.options?.map(opt => (
