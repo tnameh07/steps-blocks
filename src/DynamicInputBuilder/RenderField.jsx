@@ -46,7 +46,7 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
 
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
+                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'up')}
                         disabled={!canMoveUp}
                     >
                         ↑
@@ -144,7 +144,7 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                     value: opt,
                     label: opt
                 }));
-                console.log("mapped options:",dynamicOptions);
+                // console.log("mapped options:",dynamicOptions);
             }
                 
 

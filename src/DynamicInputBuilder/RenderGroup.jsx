@@ -3,7 +3,7 @@ import RenderField from './RenderField';
 import { Pencil } from 'lucide-react';
 
 
-const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, checkCondition, setShowAddModal, setAddToGroup}) => {
+const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, setStepsBlocksData , checkCondition, setShowAddModal, setAddToGroup}) => {
    
     const element = stepsBlocksData.blocks[elementId];
     if (!element) {
@@ -28,6 +28,7 @@ const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formV
             handleEdit={handleEdit}
             handleInputChange={handleInputChange}
             handleChangeSequence={handleChangeSequence}
+            setStepsBlocksData={setStepsBlocksData}
             checkCondition={checkCondition}
         />
     }
@@ -45,7 +46,7 @@ const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formV
           {element.label}
           <button
             type="button"
-            onClick={() => handleChangeSequence(parentId, elementId, 'up')}
+            onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, elementId, 'up')}
             disabled={!canMoveUp}
             style={{ marginLeft: 10 }}
           >
@@ -53,7 +54,7 @@ const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formV
           </button>
           <button
             type="button"
-            onClick={() => handleChangeSequence(parentId, elementId, 'down')}
+            onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, elementId, 'down')}
             disabled={!canMoveDown}
           >
             ↓
@@ -81,6 +82,7 @@ const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formV
             handleEdit={handleEdit}
             handleInputChange={handleInputChange}
             handleChangeSequence={handleChangeSequence}
+            setStepsBlocksData={setStepsBlocksData}
             checkCondition={checkCondition}
             setShowAddModal={setShowAddModal}
             setAddToGroup={setAddToGroup}

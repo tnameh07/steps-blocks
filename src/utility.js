@@ -232,11 +232,11 @@ export const defaultInputGroups = [
       Japan: ["Tokyo", "Osaka", "Kyoto"]
     }
   },
-  // visibleIf: {
-  //   field: "country",
-  //   operator: "notEquals",
-  //   value: ""
-  // }
+  visibleIf: {
+    field: "country",
+    operator: "notEquals",
+    value: ""
+  }
 },
 ];
 
