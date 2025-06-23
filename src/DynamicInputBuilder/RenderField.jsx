@@ -2,6 +2,7 @@
 
 
 
+import { Pencil } from 'lucide-react';
 
 
 const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, setStepsBlocksData , checkCondition }) => {
@@ -9,10 +10,9 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
     const isVisible = !element.visibleIf || checkCondition(element.visibleIf);
     const isDisabled = element.disabledIf && checkCondition(element.disabledIf);
     if (!isVisible) return null;
-
     if (!stepsBlocksData || !stepsBlocksData.steps) return null;
 
-    const fieldId = `${parentId}.${element.id}`;
+    const fieldId = (parentId != 'root') ?`${parentId}.${element.id}`:`${element.id}`;
     const canMoveUp = currentIndex > 0;
     const canMoveDown = currentIndex < (stepsBlocksData.steps[parentId]?.length - 1);
 
@@ -40,7 +40,10 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                         }}
 
                     />
-                    <button type="button" onClick={() => handleEdit(fieldId)}>Edit</button>
+                    <button type="button" onClick={() => handleEdit(fieldId)} style={{ marginRight: 8, display: 'flex', alignItems: 'center', padding: 4 }}>
+                    <Pencil size={16} />
+                    </button>
+
                     <button
                         type='button'
                         onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'up')}
@@ -128,6 +131,23 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
             );
 
         case 'select':
+
+            let dynamicOptions = element.options;
+            
+
+            // Support for dependsOn
+            if (element.dependsOn && element.dependsOn.field && element.dependsOn.map) {
+                const depField = element.dependsOn.field;
+                const selectedValue = formValues[depField];
+                const mappedOptions = element.dependsOn.map[selectedValue] || [];
+                dynamicOptions = mappedOptions.map(opt => ({
+                    value: opt,
+                    label: opt
+                }));
+                console.log("mapped options:",dynamicOptions);
+            }
+                
+
             return (
                 <div key={element.id} id={fieldId} className={`field-${element.type}`} style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <label style={{ display: 'block', marginBottom: 4 }}>
@@ -138,17 +158,17 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                         onChange={(e) => handleInputChange(e, element.key)}
                         disabled={isDisabled}
                         style={{
-                        width: 'auto',
-                        padding: 8,
-                        border: '1px solid #ccc',
-                        borderRadius: 4,
-                        cursor: element.disabledIf && isDisabled ? 'not-allowed' : 'text',
-                        borderColor: element.disabledIf && isDisabled ? 'red' : '#ccc'
-                        }}
+                            width: 'auto',
+                            padding: 8,
+                            border: '1px solid #ccc',
+                            borderRadius: 4,
+                            cursor: element.disabledIf && isDisabled ? 'not-allowed' : 'text',
+                            borderColor: element.disabledIf && isDisabled ? 'red' : '#ccc'
+                            }}
 
                     >
                         <option value="">Select an option</option>
-                        {element.options?.map(opt => (
+                        {dynamicOptions.map(opt => (
                             <option key={opt.value} value={opt.value}>
                                 {opt.label}
                             </option>

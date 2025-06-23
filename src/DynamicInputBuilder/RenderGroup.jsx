@@ -1,8 +1,9 @@
 import React from 'react';
 import RenderField from './RenderField';
+import { Pencil } from 'lucide-react';
 
 
-const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, setStepsBlocksData , checkCondition}) => {
+const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, setStepsBlocksData , checkCondition, setShowAddModal, setAddToGroup}) => {
    
     const element = stepsBlocksData.blocks[elementId];
     if (!element) {
@@ -32,51 +33,66 @@ const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formV
         />
     }
     if (["section", "group", "repeater"].includes(element.type)) {
-        return (
-            <div
-                key={element.id}
-                id={groupId}
-                className={`container-${element.type}`}
-                style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, marginBottom: 16 }}
-            >
-                <label style={{ fontWeight: 'bold' }}>
-                    {element.label}
-                    <button
-                        type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, elementId, 'up')}
-                        disabled={!canMoveUp}
-                        style={{ marginLeft: 10 }}
-                    >
-                        ↑
-                    </button>
-                    <button
-                        type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, elementId, 'down')}
-                        disabled={!canMoveDown}
-                    >
-                        ↓
-                    </button>
-                </label>
-                <div style={{ marginTop: 4 }}>
-                    {element.children && element.children.map((childId, childIndex) =>
-                        <RenderGroup
-                            key={childId}
-                            elementId={childId}
-                            parentId={elementId}
-                            currentIndex={childIndex}
-                            stepsBlocksData={stepsBlocksData}
-                            formValues={formValues}
-                            handleEdit={handleEdit}
-                            handleInputChange={handleInputChange}
-                            handleChangeSequence={handleChangeSequence}
-                            setStepsBlocksData={setStepsBlocksData}
-                            checkCondition={checkCondition}
-                        />
-                    )}
-                </div>
-            </div>
-        );
-    }
+  return (
+    <div
+      key={element.id}
+      id={groupId}
+      className={`container-${element.type}`}
+      style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, marginBottom: 16 }}
+    >
+      {/* Top row with label, buttons, add/edit aligned properly */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <label style={{ fontWeight: 'bold', margin: 0 }}>
+          {element.label}
+          <button
+            type="button"
+            onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, elementId, 'up')}
+            disabled={!canMoveUp}
+            style={{ marginLeft: 10 }}
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, elementId, 'down')}
+            disabled={!canMoveDown}
+          >
+            ↓
+          </button>
+        </label>
+
+        {/* Edit and Add buttons on right */}
+        <div>
+          <button type="button" onClick={() => handleEdit(elementId)} style={{ marginRight: 8 }}>Edit Field</button>
+          <button type="button" onClick={() => {setAddToGroup(elementId); // tell Form.jsx which group to add to
+                setShowAddModal(true);    // open modal
+            }}>Add Field</button>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 4 }}>
+        {element.children && element.children.map((childId, childIndex) =>
+          <RenderGroup
+            key={childId}
+            elementId={childId}
+            parentId={elementId}
+            currentIndex={childIndex}
+            stepsBlocksData={stepsBlocksData}
+            formValues={formValues}
+            handleEdit={handleEdit}
+            handleInputChange={handleInputChange}
+            handleChangeSequence={handleChangeSequence}
+            setStepsBlocksData={setStepsBlocksData}
+            checkCondition={checkCondition}
+            setShowAddModal={setShowAddModal}
+            setAddToGroup={setAddToGroup}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
     return null;
 };
 

@@ -1,8 +1,13 @@
 import RenderGroup from "./RenderGroup";
+import AddFieldModal from './AddFieldModel';
+import { useState } from 'react';
 
 const PreviewForm = ({ stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, setStepsBlocksData }) => {
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [addToGroup, setAddToGroup] = useState(null);
 
     const checkCondition = (condition) => {
+      // console.log("condition",condition)
       if (!condition) return false;
       const { field, operator, value } = condition;
       const targetValue = formValues[field] ?? "";
@@ -19,44 +24,58 @@ const PreviewForm = ({ stepsBlocksData, formValues, handleEdit, handleInputChang
     if (!stepsBlocksData || !stepsBlocksData.steps || !stepsBlocksData.blocks) return null;
     
     return (
-        <div style={{
-            flex: 1,
-            background: '#fafafa',
-            borderRadius: 8,
-            padding: 16,
-            overflowY: 'auto',
-            boxShadow: '0 2px 8px #0001'
-        }}>
-            <h3>Preview Form ({stepsBlocksData.title})</h3>
-            <form id="preview-form" className="dynamic-form">
-                {stepsBlocksData.steps.root.map((rootId, index) =>
-                    <RenderGroup
-                        key={rootId}
-                        elementId={rootId}
-                        parentId={'root'}
-                        currentIndex={index}
-                        stepsBlocksData={stepsBlocksData}
-                        formValues={formValues}
-                        handleEdit={handleEdit}
-                        handleInputChange={handleInputChange}
-                        handleChangeSequence={handleChangeSequence}
-                        setStepsBlocksData={setStepsBlocksData}
-                        checkCondition={checkCondition}
-                    />)}
-            </form>
-            {/* <h4 style={{ marginTop: 24 }}>Transformed Steps & Blocks</h4>
-            <pre style={{
-                background: '#f0f8ff',
-                padding: 8,
-                borderRadius: 4,
-                fontSize: 12,
-                maxHeight: 200,
-                overflowY: 'auto'
-            }}>
-                {JSON.stringify(stepsBlocksData, null, 2)}
-            </pre> */}
-        </div>
-    );
+  <div style={{
+    flex: 1,
+    background: '#fafafa',
+    borderRadius: 8,
+    padding: 16,
+    overflowY: 'auto',
+    boxShadow: '0 2px 8px #0001'
+  }}>
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12
+    }}>
+      <h3 style={{ margin: 0 }}>Preview Form ({stepsBlocksData.title})</h3>
+      <button type="button" onClick={() => {
+        setAddToGroup('root'); 
+        setShowAddModal(true);
+        }}>Add Field</button>
+
+    </div>
+
+    <form id="preview-form" className="dynamic-form">
+      {stepsBlocksData.steps.root.map((rootId, index) => (
+        <RenderGroup
+          key={rootId}
+          elementId={rootId}
+          parentId={'root'}
+          currentIndex={index}
+          stepsBlocksData={stepsBlocksData}
+          formValues={formValues}
+          handleEdit={handleEdit}
+          handleInputChange={handleInputChange}
+          handleChangeSequence={handleChangeSequence}
+          setStepsBlocksData={setStepsBlocksData}
+          checkCondition={checkCondition}
+          setShowAddModal={setShowAddModal}
+          setAddToGroup={setAddToGroup}
+        />
+      ))}
+    </form>
+    {showAddModal && (
+  <AddFieldModal
+    parentId={addToGroup}
+    setShowAddModal={setShowAddModal}
+    setStepsBlocksData={setStepsBlocksData}
+  />
+)}
+
+  </div>
+);
+
 };
 
 export default PreviewForm;

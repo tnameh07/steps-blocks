@@ -183,18 +183,18 @@ export const defaultInputGroups = [
     ]
   },
   {
-  id: "feedback",
-  key: "feedback",
-  type: "select",
-  label: "Feedback",
-  options: [
-    { value: "positive", label: "positive" },
-    { value: "negative", label: "negative" },
-    { value: "other", label: "other" }
-  ],
-  required: true
-},
-{
+      id: "feedback",
+      key: "feedback",
+      type: "select",
+      label: "Feedback",
+      options: [
+        { value: "positive", label: "Positve" },
+        { value: "negative", label: "Negative" },
+        { value: "other", label: "Other" }
+      ],
+      required: true
+    },
+  {
   id: "other",
   key: "other",
   type: "text",
@@ -205,6 +205,38 @@ export const defaultInputGroups = [
         operator: "equals",
         value: "other"
       }
+  },
+  {
+  id: "country",
+  key: "country",
+  type: "select",
+  label: "Country",
+  options: [
+    { value: "US", label: "US" },
+    { value: "India", label: "India" },
+    { value: "Japan", label: "Japan" }
+  ],
+  required: true
+},
+{
+  id: "state",
+  key: "state",
+  type: "select",
+  label: "State",
+  required: true,
+  dependsOn: {
+    field: "country",
+    map: {
+      US: ["California", "Texas", "New York"],
+      India: ["Maharashtra", "Gujarat", "Karnataka"],
+      Japan: ["Tokyo", "Osaka", "Kyoto"]
+    }
+  },
+  // visibleIf: {
+  //   field: "country",
+  //   operator: "notEquals",
+  //   value: ""
+  // }
 },
 ];
 
@@ -275,6 +307,8 @@ export function creatingFirstSequence(groups){
 
 
 export function changeSequence(stepsBlocksData, setStepsBlocksData, group_id, field_id, direction) {
+  console.log("Parent: ",group_id);
+  console.log("current: ",field_id);
   if (!stepsBlocksData || !stepsBlocksData.steps[group_id]) return;
 
   const stepsGroup = stepsBlocksData.steps[group_id];

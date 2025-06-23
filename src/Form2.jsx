@@ -15,6 +15,10 @@ const Form = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const isUpdatingFromJson = useRef(false);
   const isUpdatingFromGui = useRef(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addToGroup, setAddToGroup] = useState(null);
+
+
 
   const handleJsonChange = (e) => {
     const value = e.target.value;
