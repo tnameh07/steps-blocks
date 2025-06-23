@@ -79,7 +79,7 @@ const Form = () => {
   }, [editData]);
 
 
-  const handleChangeSequence = (stepsBlocksData, setStepsBlocksData, group_id, field_id, direction) => {
+  const handleChangeSequence = (group_id, field_id, direction) => {
     isUpdatingFromGui.current = true; // Set flag before GUI changes
     changeSequence(stepsBlocksData, setStepsBlocksData, group_id, field_id, direction);
   };
@@ -90,7 +90,7 @@ const Form = () => {
       {jsonText && <InputJsonBuilder handleJsonChange={handleJsonChange} jsonText={jsonText} setJsonText={setJsonText} jsonError={jsonError}/>}
    {/* Preview Form Block */}
       {stepsBlocksData ? (
-        <PreviewForm stepsBlocksData={stepsBlocksData} formValues={formValues} handleEdit={handleEdit} handleInputChange={handleInputChange}  handleChangeSequence={handleChangeSequence} setStepsBlocksData={setStepsBlocksData} />
+        <PreviewForm stepsBlocksData={stepsBlocksData} formValues={formValues} handleEdit={handleEdit} handleInputChange={handleInputChange}  handleChangeSequence={handleChangeSequence}/>
       ) : (
         <p>Loading...</p>
       )}

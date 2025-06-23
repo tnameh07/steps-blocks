@@ -2,7 +2,7 @@ import RenderGroup from "./RenderGroup";
 import AddFieldModal from './AddFieldModel';
 import { useState } from 'react';
 
-const PreviewForm = ({ stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, setStepsBlocksData }) => {
+const PreviewForm = ({ stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence}) => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [addToGroup, setAddToGroup] = useState(null);
 
@@ -58,7 +58,6 @@ const PreviewForm = ({ stepsBlocksData, formValues, handleEdit, handleInputChang
           handleEdit={handleEdit}
           handleInputChange={handleInputChange}
           handleChangeSequence={handleChangeSequence}
-          setStepsBlocksData={setStepsBlocksData}
           checkCondition={checkCondition}
           setShowAddModal={setShowAddModal}
           setAddToGroup={setAddToGroup}

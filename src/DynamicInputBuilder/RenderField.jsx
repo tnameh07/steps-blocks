@@ -46,7 +46,7 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
 
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'up')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
                         disabled={!canMoveUp}
                     >
                         ↑
