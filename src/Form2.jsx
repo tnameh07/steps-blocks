@@ -5,8 +5,8 @@ import EditModel from './EditModel.jsx';
 import { changeSequence, creatingBlock, creatingFirstSequence, defaultInputGroups, reconstructInputGroups } from './utility.js';
 
 const Form = () => {
-  const [jsonText, setJsonText] = useState(JSON.stringify(defaultInputGroups, null, 2));
-  const [inputGroups, setInputGroups] = useState(defaultInputGroups);
+  const [jsonText, setJsonText] = useState([]);
+  // const [inputGroups, setInputGroups] = useState(defaultInputGroups);
   const [stepsBlocksData, setStepsBlocksData] = useState(null);
   const [jsonError, setJsonError] = useState(null);
   const [formValues, setFormValues] = useState({});
@@ -17,16 +17,40 @@ const Form = () => {
   const isUpdatingFromGui = useRef(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addToGroup, setAddToGroup] = useState(null);
+//  const isFirstRender = useRef(true);
 
+  const fetchData = async () => {
+    try {
+      const response = await fetch('https://flow.sokt.io/func/scriEozEsv6d');
+      const data = await response.json();
+      console.log("data", data)
+      return data;
+      // setFormValues(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  }
+  const createBlocksSequence = async (inputGroups) => {
+    console.log("Input groups:", inputGroups)
+    const blocks = await creatingBlock(inputGroups, "");
+    const sequence = await creatingFirstSequence(inputGroups);
+    const finaljsona = {
+      title: "Dynamic Form Preview",
+      steps: sequence,
+      blocks: blocks
+    };
+    console.log("finaljsona", finaljsona);
 
+    return finaljsona;
+  }
 
   const handleJsonChange = (e) => {
     const value = e.target.value;
     setJsonText(value);
     try {
-      const parsed = JSON.parse(value);
+      // const parsed = JSON.parse(value);
       isUpdatingFromJson.current = true;
-      setInputGroups(parsed);
+      // setInputGroups(parsed);
       setJsonError(null);
     } catch (err) {
       setJsonError(err.message);
@@ -48,35 +72,51 @@ const Form = () => {
   };
 
   useEffect(() => {
-    const blocks = creatingBlock(inputGroups, "");
-    const sequence = creatingFirstSequence(inputGroups);
-    const finaljsona = {
-      title: "Dynamic Form Preview",
-      steps: sequence,
-      blocks: blocks
+    const fetchAndSetData = async () => {
+      console.log("first functin", stepsBlocksData);
+      const data = await fetchData();
+      if (data && data.length) {
+        console.log("data", data);
+        const blocksSequenceData = await createBlocksSequence(data);
+        console.log("blocksSequenceData", blocksSequenceData);
+        setStepsBlocksData(blocksSequenceData);
+        // setJsonText(JSON.stringify(data, null, 2));
+      }
+      // Note: stepsBlocksData here will not reflect the latest state immediately after setStepsBlocksData
+      // If you want to log the updated state, use another useEffect watching stepsBlocksData
+      console.log("second update stepsBlocksData", stepsBlocksData);
     };
-    setStepsBlocksData(finaljsona);
-    console.log("FINAL JSON:", finaljsona);
-    isUpdatingFromJson.current = false;
-  }, [inputGroups]);
+console.log("first", stepsBlocksData);
 
+    fetchAndSetData();
+  }, []);
+
+  // useEffect(() => {
+  //   const blocks = creatingBlock(inputGroups, "");
+  //   const sequence = creatingFirstSequence(inputGroups);
+  //   const finaljsona = {
+  //     title: "Dynamic Form Preview",
+  //     steps: sequence,
+  //     blocks: blocks
   useEffect(() => {
-    if (stepsBlocksData && !isUpdatingFromJson.current && isUpdatingFromGui.current) {
+    // if (isFirstRender.current) {
+    //   isFirstRender.current = false;
+    //   return;
+    // }
+    console.log("after update this should trigger useEffect", stepsBlocksData);
+    if (stepsBlocksData) {
       const newInputGroups = reconstructInputGroups(stepsBlocksData);
-      setInputGroups(newInputGroups);
+      // setInputGroups(newInputGroups);
+      console.log("newInputGroups JSON: ", newInputGroups);
       setJsonText(JSON.stringify(newInputGroups, null, 2));
       isUpdatingFromGui.current = false;
     }
+    // console.log("abc", stepsBlocksData);
   }, [stepsBlocksData]);
 
-  useEffect(() => {
-    if (editData) {
-      const newInputGroups = reconstructInputGroups(stepsBlocksData);
-      setInputGroups(newInputGroups);
-      setJsonText(JSON.stringify(newInputGroups, null, 2));
-      isUpdatingFromGui.current = true;
-    }
-  }, [editData]);
+  //     isUpdatingFromGui.current = true;
+  //   }
+  // }, [editData]);
 
 
   const handleChangeSequence = (group_id, field_id, direction) => {
@@ -90,7 +130,7 @@ const Form = () => {
       {jsonText && <InputJsonBuilder handleJsonChange={handleJsonChange} jsonText={jsonText} setJsonText={setJsonText} jsonError={jsonError}/>}
    {/* Preview Form Block */}
       {stepsBlocksData ? (
-        <PreviewForm stepsBlocksData={stepsBlocksData} formValues={formValues} handleEdit={handleEdit} handleInputChange={handleInputChange}  handleChangeSequence={handleChangeSequence}/>
+        <PreviewForm stepsBlocksData={stepsBlocksData} formValues={formValues} handleEdit={handleEdit} handleInputChange={handleInputChange}  handleChangeSequence={handleChangeSequence} setStepsBlocksData={setStepsBlocksData}/>
       ) : (
         <p>Loading...</p>
       )}

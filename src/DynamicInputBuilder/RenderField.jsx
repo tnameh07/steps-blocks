@@ -5,7 +5,7 @@
 import { Pencil } from 'lucide-react';
 
 
-const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, setStepsBlocksData , checkCondition }) => {
+const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, checkCondition }) => {
 
     const isVisible = !element.visibleIf || checkCondition(element.visibleIf);
     const isDisabled = element.disabledIf && checkCondition(element.disabledIf);
@@ -53,7 +53,7 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                     </button>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'down')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'down')}
                         disabled={!canMoveDown}
                     >
                         ↓
@@ -85,14 +85,14 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                     </div>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'up')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
                         disabled={!canMoveUp}
                     >
                         ↑
                     </button>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'down')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'down')}
                         disabled={!canMoveDown}
                     >
                         ↓
@@ -115,14 +115,14 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                     </label>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'up')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
                         disabled={!canMoveUp}
                     >
                         ↑
                     </button>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'down')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'down')}
                         disabled={!canMoveDown}
                     >
                         ↓
@@ -176,14 +176,14 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                     </select>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'up')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
                         disabled={!canMoveUp}
                     >
                         ↑
                     </button>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'down')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'down')}
                         disabled={!canMoveDown}
                     >
                         ↓
