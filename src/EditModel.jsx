@@ -13,16 +13,41 @@ const EditModel = ({ editPath, editData, setStepsBlocksData, setShowEditModal, s
   const handleSave = () => {
     if (!localEditData) return;
     setIsLoading(true);
+    console.log('EditModel: Saving changes for', editPath);
 
     try {
-      // Update parent state
-      setStepsBlocksData(prev => ({
-        ...prev,
-        blocks: {
-          ...prev.blocks,
-          [editPath]: localEditData
+      // Create a completely new state object with new references at every level
+      // This ensures proper detection by React.memo equality functions
+      setStepsBlocksData(prev => {
+        // Extract parent ID and child ID from the edit path
+        const pathParts = editPath.split('.');
+        const parentId = pathParts.slice(0, -1).join('.') || 'root';
+        
+        console.log('EditModel: Updating state in parent:', parentId);
+        
+        // Create a completely new object with all new references to ensure React detects the change
+        const newState = {
+          ...prev,
+          blocks: {
+            ...prev.blocks,
+            [editPath]: {
+              ...localEditData
+            }
+          }
+        };
+        
+        // Force update of the steps object too so equality checks for parent nodes also fail
+        // This is important for parent sequences to detect changes
+        if (prev.steps[parentId] && Array.isArray(prev.steps[parentId])) {
+          newState.steps = {
+            ...prev.steps,
+            [parentId]: [...prev.steps[parentId]]
+          };
         }
-      }));
+        
+        console.log('EditModel: State updated with new references');
+        return newState;
+      });
 
       setEditData(localEditData);
       setShowEditModal(false);
@@ -32,6 +57,7 @@ const EditModel = ({ editPath, editData, setStepsBlocksData, setShowEditModal, s
       setIsLoading(false);
     }
   };
+  
   useEffect(() => {
     setLocalEditData(editData);
   }, [editData]);

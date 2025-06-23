@@ -269,51 +269,65 @@ export function creatingFirstSequence(groups){
             }
         }
     }
-    collectChildren(groups, "");
+    collectChildren(groups, '');
     return sequence;
 }
 
 
 export function changeSequence(stepsBlocksData, setStepsBlocksData, group_id, field_id, direction) {
-  if (!stepsBlocksData || !stepsBlocksData.steps[group_id]) return;
+console.log('changeSequence called with:', { group_id, field_id, direction });
+  
+if (!stepsBlocksData || !stepsBlocksData.steps[group_id]) {
+console.log('Invalid stepsBlocksData or group_id');
+return;
+}
 
-  const stepsGroup = stepsBlocksData.steps[group_id];
-  const blocksGroup = stepsBlocksData.blocks[group_id];
-  const currentIndex = stepsGroup.indexOf(field_id);
+const stepsGroup = stepsBlocksData.steps[group_id];
+const blocksGroup = stepsBlocksData.blocks[group_id];
+const currentIndex = stepsGroup.indexOf(field_id);
+  
+console.log('Current index:', currentIndex, 'in group:', group_id);
 
-  let targetIndex;
-  if (direction === 'up') targetIndex = currentIndex - 1;
-  else if (direction === 'down') targetIndex = currentIndex + 1;
-  else return;
+let targetIndex;
+if (direction === 'up') targetIndex = currentIndex - 1;
+else if (direction === 'down') targetIndex = currentIndex + 1;
+else return;
 
-  if (targetIndex < 0 || targetIndex >= stepsGroup.length) return;
+if (targetIndex < 0 || targetIndex >= stepsGroup.length) {
+console.log('Target index out of bounds:', targetIndex);
+return;
+}
 
-  // Immutably copy arrays
-  const newStepsGroup = [...stepsGroup];
-  const newBlocksChildren = blocksGroup?.children ? [...blocksGroup.children] : null;
+// Immutably copy arrays
+const newStepsGroup = [...stepsGroup];
+const newBlocksChildren = blocksGroup?.children ? [...blocksGroup.children] : null;
 
-  // Swap in steps
-  [newStepsGroup[currentIndex], newStepsGroup[targetIndex]] = [newStepsGroup[targetIndex], newStepsGroup[currentIndex]];
-  // Swap in blocks.children if present
-  if (newBlocksChildren) {
-    [newBlocksChildren[currentIndex], newBlocksChildren[targetIndex]] = [newBlocksChildren[targetIndex], newBlocksChildren[currentIndex]];
-  }
+// Swap in steps
+[newStepsGroup[currentIndex], newStepsGroup[targetIndex]] = [newStepsGroup[targetIndex], newStepsGroup[currentIndex]];
+  
+// Swap in blocks.children if present
+if (newBlocksChildren) {
+[newBlocksChildren[currentIndex], newBlocksChildren[targetIndex]] = [newBlocksChildren[targetIndex], newBlocksChildren[currentIndex]];
+}
 
-  // Build new state
-  setStepsBlocksData(prev => ({
-    ...prev,
-    steps: {
-      ...prev.steps,
-      [group_id]: newStepsGroup,
-    },
-    blocks: {
-      ...prev.blocks,
-      [group_id]: {
-        ...prev.blocks[group_id],
-        ...(newBlocksChildren ? { children: newBlocksChildren } : {}),
-      },
-    },
-  }));
+// Create completely new state object with all references changed
+const newState = {
+...stepsBlocksData,
+steps: {
+...stepsBlocksData.steps,
+[group_id]: newStepsGroup,
+},
+blocks: {
+...stepsBlocksData.blocks,
+[group_id]: {
+...stepsBlocksData.blocks[group_id],
+...(newBlocksChildren ? { children: newBlocksChildren } : {}),
+},
+},
+};
+  
+console.log('Sequence changed, setting new state');
+setStepsBlocksData(newState);
 };
 
 
