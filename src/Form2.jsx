@@ -51,6 +51,9 @@ const Form = () => {
       // const parsed = JSON.parse(value);
       isUpdatingFromJson.current = true;
       // setInputGroups(parsed);
+      const blocksSequenceData =  createBlocksSequence(value);
+        console.log("blocksSequenceData", blocksSequenceData);
+        setStepsBlocksData(blocksSequenceData);
       setJsonError(null);
     } catch (err) {
       setJsonError(err.message);
@@ -127,13 +130,20 @@ console.log("first", stepsBlocksData);
   return (
     <div style={{ display: 'flex', height: '80vh', gap: 24 }}>
       {/* JSON Editor Block */}
-      {jsonText && <InputJsonBuilder handleJsonChange={handleJsonChange} jsonText={jsonText} setJsonText={setJsonText} jsonError={jsonError}/>}
+      <InputJsonBuilder 
+      handleJsonChange={handleJsonChange} 
+      jsonText={jsonText} 
+      setJsonText={setJsonText} 
+      jsonError={jsonError}/>
    {/* Preview Form Block */}
-      {stepsBlocksData ? (
-        <PreviewForm stepsBlocksData={stepsBlocksData} formValues={formValues} handleEdit={handleEdit} handleInputChange={handleInputChange}  handleChangeSequence={handleChangeSequence} setStepsBlocksData={setStepsBlocksData}/>
-      ) : (
-        <p>Loading...</p>
-      )}
+      <PreviewForm
+        stepsBlocksData={stepsBlocksData}
+        formValues={formValues}
+        handleEdit={handleEdit}
+        handleInputChange={handleInputChange}
+        handleChangeSequence={handleChangeSequence}
+        setStepsBlocksData={setStepsBlocksData}
+      />
       {/* Edit Modal */}
       {showEditModal &&
         <EditModel
