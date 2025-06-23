@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import RenderField from './RenderField';
 
 
-const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, setStepsBlocksData , checkCondition}) => {
+const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, checkCondition}) => {
+   
+    console.log('RenderGroup rendering:', elementId);
    
     const element = stepsBlocksData.blocks[elementId];
     if (!element) {
@@ -27,7 +29,6 @@ const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formV
             handleEdit={handleEdit}
             handleInputChange={handleInputChange}
             handleChangeSequence={handleChangeSequence}
-            setStepsBlocksData={setStepsBlocksData}
             checkCondition={checkCondition}
         />
     }
@@ -43,7 +44,7 @@ const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formV
                     {element.label}
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, elementId, 'up')}
+                        onClick={() => handleChangeSequence(parentId, elementId, 'up')}
                         disabled={!canMoveUp}
                         style={{ marginLeft: 10 }}
                     >
@@ -51,7 +52,7 @@ const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formV
                     </button>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, elementId, 'down')}
+                        onClick={() => handleChangeSequence(parentId, elementId, 'down')}
                         disabled={!canMoveDown}
                     >
                         ↓
@@ -69,7 +70,6 @@ const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formV
                             handleEdit={handleEdit}
                             handleInputChange={handleInputChange}
                             handleChangeSequence={handleChangeSequence}
-                            setStepsBlocksData={setStepsBlocksData}
                             checkCondition={checkCondition}
                         />
                     )}
@@ -80,4 +80,47 @@ const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formV
     return null;
 };
 
+// Custom equality check to prevent unnecessary re-renders
+function arePropsEqual(prevProps, nextProps) {
+  // First check for updates to current element data
+  const currentElementChanged = prevProps.stepsBlocksData.blocks[prevProps.elementId] !== nextProps.stepsBlocksData.blocks[nextProps.elementId];
+  
+  // Check if children sequence has changed
+  const childSequenceChanged = JSON.stringify(prevProps.stepsBlocksData.steps[prevProps.elementId]) !== 
+                               JSON.stringify(nextProps.stepsBlocksData.steps[prevProps.elementId]);
+  
+  // Check if parent sequence has changed (which affects position)
+  const parentSequenceChanged = JSON.stringify(prevProps.stepsBlocksData.steps[prevProps.parentId]) !== 
+                                JSON.stringify(nextProps.stepsBlocksData.steps[prevProps.parentId]);
+  
+  // Check if form values relevant to this group changed
+  const relevantFormValuesChanged = !Object.keys(prevProps.formValues)
+    .filter(key => key.startsWith(prevProps.elementId))
+    .every(key => prevProps.formValues[key] === nextProps.formValues[key]);
+    
+  // Check if current index changed
+  const currentIndexChanged = prevProps.currentIndex !== nextProps.currentIndex;
+  
+  // We should re-render if any of these conditions are true
+  const shouldRender = currentElementChanged || 
+                      childSequenceChanged || 
+                      parentSequenceChanged || 
+                      relevantFormValuesChanged ||
+                      currentIndexChanged;
+  
+  if (shouldRender) {
+    console.log('RenderGroup will re-render:', prevProps.elementId, { 
+      currentElementChanged, 
+      childSequenceChanged, 
+      parentSequenceChanged,
+      relevantFormValuesChanged,
+      currentIndexChanged
+    });
+  }
+  
+  // Return false to cause re-render when needed
+  return !shouldRender;
+}
+
+// export default React.memo(RenderGroup);
 export default RenderGroup;

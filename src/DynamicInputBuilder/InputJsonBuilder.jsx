@@ -1,5 +1,7 @@
 
-const InputJsonBuilder = ({handleJsonChange, jsonText, setJsonText, jsonError}) => {
+import React from 'react';
+
+const InputJsonBuilder = ({handleJsonChange, jsonText, jsonError}) => {
   // const handleJsonChange = (e) => {
   //   const value = e.target.value;
   //   setJsonText(value);
@@ -35,4 +37,11 @@ const InputJsonBuilder = ({handleJsonChange, jsonText, setJsonText, jsonError}) 
 
 }
 
-export default InputJsonBuilder
+// Use React.memo for performance optimization
+export default React.memo(InputJsonBuilder, (prevProps, nextProps) => {
+  // Only re-render when these props change
+  return (
+    prevProps.jsonText === nextProps.jsonText &&
+    prevProps.jsonError === nextProps.jsonError
+  );
+});

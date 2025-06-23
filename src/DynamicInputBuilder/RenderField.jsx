@@ -1,16 +1,15 @@
 
 
+import React from 'react';
 
-
-
-
-const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, setStepsBlocksData , checkCondition }) => {
+const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, checkCondition }) => {
+    console.log('RenderField rendering:', element.id);
 
     const isVisible = !element.visibleIf || checkCondition(element.visibleIf);
     const isDisabled = element.disabledIf && checkCondition(element.disabledIf);
     if (!isVisible) return null;
 
-    if (!stepsBlocksData || !stepsBlocksData.steps) return null;
+    // if (!stepsBlocksData || !stepsBlocksData.steps) return null;
 
     const fieldId = `${parentId}.${element.id}`;
     const canMoveUp = currentIndex > 0;
@@ -35,14 +34,14 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                     <button type="button" onClick={() => handleEdit(fieldId)}>Edit</button>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'up')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
                         disabled={!canMoveUp}
                     >
                         ↑
                     </button>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'down')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'down')}
                         disabled={!canMoveDown}
                     >
                         ↓
@@ -74,14 +73,14 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                     </div>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'up')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
                         disabled={!canMoveUp}
                     >
                         ↑
                     </button>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'down')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'down')}
                         disabled={!canMoveDown}
                     >
                         ↓
@@ -104,14 +103,14 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                     </label>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'up')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
                         disabled={!canMoveUp}
                     >
                         ↑
                     </button>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'down')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'down')}
                         disabled={!canMoveDown}
                     >
                         ↓
@@ -140,14 +139,14 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                     </select>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'up')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
                         disabled={!canMoveUp}
                     >
                         ↑
                     </button>
                     <button
                         type='button'
-                        onClick={() => handleChangeSequence(stepsBlocksData, setStepsBlocksData, parentId, fieldId, 'down')}
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'down')}
                         disabled={!canMoveDown}
                     >
                         ↓
@@ -164,4 +163,66 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
     }
 };
 
+// Enhanced equality function with deep property comparison for fields
+function arePropsEqual(prevProps, nextProps) {
+    // Check if the element reference changed
+    const elementReferenceChanged = prevProps.element !== nextProps.element;
+    
+    // Deep check for element properties even if reference is the same
+    let elementPropertiesChanged = false;
+    
+    if (!elementReferenceChanged) {
+      // These are the critical properties that should trigger a re-render if changed
+      const criticalProps = ['label', 'placeholder', 'required', 'type', 'inputType', 'options'];
+      
+      // Check each property individually
+      for (const prop of criticalProps) {
+        if (JSON.stringify(prevProps.element[prop]) !== JSON.stringify(nextProps.element[prop])) {
+          console.log(`RenderField detected property change in ${prop}:`, {
+            prev: prevProps.element[prop],
+            next: nextProps.element[prop]
+          });
+          elementPropertiesChanged = true;
+          break;
+        }
+      }
+    }
+  
+    // Check if the element's position changed
+    const positionChanged = prevProps.currentIndex !== nextProps.currentIndex;
+  
+    // Check if parent sequence changed (affecting the field's position)
+    const parentSequenceChanged = 
+      JSON.stringify(prevProps.stepsBlocksData.steps[prevProps.parentId]) !== 
+      JSON.stringify(nextProps.stepsBlocksData.steps[prevProps.parentId]);
+      
+    // Check if field value changed
+    const fieldValueChanged = 
+      prevProps.formValues[prevProps.element.key] !== 
+      nextProps.formValues[prevProps.element.key];
+      
+    // We should re-render if any of these changed
+    const shouldUpdate = 
+      elementReferenceChanged || 
+      elementPropertiesChanged ||
+      positionChanged || 
+      parentSequenceChanged || 
+      fieldValueChanged;
+      
+    if (shouldUpdate) {
+      console.log('RenderField will re-render:', prevProps.element.id, {
+        elementReferenceChanged,
+        elementPropertiesChanged,
+        positionChanged,
+        parentSequenceChanged,
+        fieldValueChanged
+      });
+    }
+    
+    // Return false to trigger re-render
+    return !shouldUpdate;
+}
+
+// export default React.memo(RenderField);
 export default RenderField;
+

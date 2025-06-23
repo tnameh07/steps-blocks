@@ -2,102 +2,102 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import InputJsonBuilder from './DynamicInputBuilder/InputJsonBuilder.jsx';
 import PreviewForm from './DynamicInputBuilder/PreviewForm.jsx';
 import EditModel from './EditModel.jsx';
-import { changeSequence, creatingBlock, creatingFirstSequence, defaultInputGroups, reconstructInputGroups } from './utility.js';
+import { creatingBlock, creatingFirstSequence, defaultInputGroups, reconstructInputGroups, changeSequence } from "./utility";
 
 const Form = () => {
   const [jsonText, setJsonText] = useState(JSON.stringify(defaultInputGroups, null, 2));
-  const [inputGroups, setInputGroups] = useState(defaultInputGroups);
-  const [stepsBlocksData, setStepsBlocksData] = useState(null);
+  // const [inputGroups, setInputGroups] = useState(defaultInputGroups);
+  const [stepsBlocksData, setStepsBlocksData] = useState(() => {
+    const blocks = creatingBlock(defaultInputGroups, "");
+    const sequence = creatingFirstSequence(defaultInputGroups);
+    return {
+      title: "Dynamic Form Preview",
+      steps: sequence,
+      blocks: blocks
+    };
+  });
   const [jsonError, setJsonError] = useState(null);
-  const [formValues, setFormValues] = useState({});
-  const [editData, setEditData] = useState(null);
-  const [editPath, setEditPath] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
   const isUpdatingFromJson = useRef(false);
   const isUpdatingFromGui = useRef(false);
 
-  const handleJsonChange = (e) => {
+  const handleJsonChange = useCallback((e) => {
     const value = e.target.value;
     setJsonText(value);
     try {
       const parsed = JSON.parse(value);
       isUpdatingFromJson.current = true;
-      setInputGroups(parsed);
+      
+      // Update both inputGroups and stepsBlocksData directly
+      // setInputGroups(parsed);
+      
+      // Transform directly without waiting for useEffect
+      const blocks = creatingBlock(parsed, "");
+      const sequence = creatingFirstSequence(parsed);
+      setStepsBlocksData({
+        title: "Dynamic Form Preview",
+        steps: sequence,
+        blocks: blocks
+      });
+      
       setJsonError(null);
+      // Reset flag after updates are complete
+      setTimeout(() => {
+        isUpdatingFromJson.current = false;
+      }, 0);
     } catch (err) {
       setJsonError(err.message);
     }
-  };
-
-  const handleInputChange = useCallback((e, fieldKey) => {
-    const { type, name, value, checked } = e.target;
-    setFormValues(prevValues => ({
-      ...prevValues,
-      [fieldKey]: type === 'checkbox' ? checked : value
-    }));
-  });
-  const handleEdit = (id) => {
-    const block = stepsBlocksData.blocks[id];
-    setEditData(block);
-    setEditPath(id);
-    setShowEditModal(true);
-  };
+  }, []);
 
   useEffect(() => {
-    const blocks = creatingBlock(inputGroups, "");
-    const sequence = creatingFirstSequence(inputGroups);
-    const finaljsona = {
-      title: "Dynamic Form Preview",
-      steps: sequence,
-      blocks: blocks
-    };
-    setStepsBlocksData(finaljsona);
-    console.log("FINAL JSON:", finaljsona);
-    isUpdatingFromJson.current = false;
-  }, [inputGroups]);
-
-  useEffect(() => {
+    // Only update when GUI changes trigger updates to stepsBlocksData
     if (stepsBlocksData && !isUpdatingFromJson.current && isUpdatingFromGui.current) {
       const newInputGroups = reconstructInputGroups(stepsBlocksData);
-      setInputGroups(newInputGroups);
+      // setInputGroups(newInputGroups);
       setJsonText(JSON.stringify(newInputGroups, null, 2));
       isUpdatingFromGui.current = false;
     }
   }, [stepsBlocksData]);
 
-  useEffect(() => {
-    if (editData) {
-      const newInputGroups = reconstructInputGroups(stepsBlocksData);
-      setInputGroups(newInputGroups);
-      setJsonText(JSON.stringify(newInputGroups, null, 2));
-      isUpdatingFromGui.current = true;
-    }
-  }, [editData]);
+  // useEffect(() => {
+  //   if (editData) {
+  //     // Mark as GUI update to prevent circular updates
+  //     isUpdatingFromGui.current = true;
+      
+  //     // No need to reconstruct inputGroups here since the stepsBlocksData 
+  //     // effect will handle this when stepsBlocksData changes
+  //   }
+  // }, [editData]);
 
-
-  const handleChangeSequence = (stepsBlocksData, setStepsBlocksData, group_id, field_id, direction) => {
-    isUpdatingFromGui.current = true; // Set flag before GUI changes
-    changeSequence(stepsBlocksData, setStepsBlocksData, group_id, field_id, direction);
-  };
+  // };
+  
+  const handleChangeSequence = useCallback((group_id, field_id, direction) => {
+    console.log('Form: handleChangeSequence called', { group_id, field_id, direction });
+    
+    isUpdatingFromGui.current = true;
+    
+    // Call the utility function with the current state
+    changeSequence(stepsBlocksData, (updatedData) => {
+      console.log('Setting new stepsBlocksData state after sequence change');
+      setStepsBlocksData(updatedData);
+    }, group_id, field_id, direction);
+  }, [stepsBlocksData]);
 
   return (
     <div style={{ display: 'flex', height: '80vh', gap: 24 }}>
       {/* JSON Editor Block */}
-      {jsonText && <InputJsonBuilder handleJsonChange={handleJsonChange} jsonText={jsonText} setJsonText={setJsonText} jsonError={jsonError}/>}
-   {/* Preview Form Block */}
+      {jsonText && <InputJsonBuilder handleJsonChange={handleJsonChange} jsonText={jsonText} jsonError={jsonError}/>}
+      {/* Preview Form Block */}
       {stepsBlocksData ? (
-        <PreviewForm stepsBlocksData={stepsBlocksData} formValues={formValues} handleEdit={handleEdit} handleInputChange={handleInputChange}  handleChangeSequence={handleChangeSequence} setStepsBlocksData={setStepsBlocksData} />
+        <PreviewForm 
+          stepsBlocksData={stepsBlocksData} 
+          handleChangeSequence={handleChangeSequence} 
+          setStepsBlocksData={setStepsBlocksData}
+          isUpdatingFromGui={isUpdatingFromGui} 
+        />
       ) : (
         <p>Loading...</p>
       )}
-      {/* Edit Modal */}
-      {showEditModal &&
-        <EditModel
-          editPath={editPath}
-          setEditData={setEditData}
-          editData={editData}
-          setStepsBlocksData={setStepsBlocksData}
-          setShowEditModal={setShowEditModal} />}
     </div>
   );
 };
