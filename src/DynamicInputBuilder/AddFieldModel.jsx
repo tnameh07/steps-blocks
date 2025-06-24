@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 
 const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
-  console.log("I am a parent",parentId);
+  
   const idRef = useRef();
   const keyRef = useRef();
   const labelRef = useRef();
@@ -26,7 +26,7 @@ const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
       visibleIf: null,
       disabledIf: null,
     };
-    console.log(newField);
+  
     setStepsBlocksData(prev => {
       const updated = { ...prev };
       updated.blocks[id] = newField;

@@ -5,7 +5,7 @@ import { Pencil } from 'lucide-react';
 
 const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, checkCondition, setShowAddModal, setAddToGroup}) => {
    
-    const element = stepsBlocksData.blocks[elementId];
+    const element = stepsBlocksData?.blocks[elementId];
     if (!element) {
         return null;
     }
@@ -70,7 +70,7 @@ const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formV
       </div>
 
       <div style={{ marginTop: 4 }}>
-        {element.children && element.children.map((childId, childIndex) =>
+        {element?.children && element?.children?.map((childId, childIndex) =>
           <RenderGroup
             key={childId}
             elementId={childId}

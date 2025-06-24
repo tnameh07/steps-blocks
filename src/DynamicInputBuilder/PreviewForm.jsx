@@ -2,12 +2,12 @@ import RenderGroup from "./RenderGroup";
 import AddFieldModal from './AddFieldModel';
 import { useState } from 'react';
 
-const PreviewForm = ({ stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence}) => {
+const PreviewForm = ({ stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence,setStepsBlocksData}) => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [addToGroup, setAddToGroup] = useState(null);
 
     const checkCondition = (condition) => {
-      // console.log("condition",condition)
+
       if (!condition) return false;
       const { field, operator, value } = condition;
       const targetValue = formValues[field] ?? "";
@@ -21,8 +21,7 @@ const PreviewForm = ({ stepsBlocksData, formValues, handleEdit, handleInputChang
       }
     };
     
-    if (!stepsBlocksData || !stepsBlocksData.steps || !stepsBlocksData.blocks) return null;
-    
+    if (!stepsBlocksData || !stepsBlocksData.steps || !stepsBlocksData.blocks) return null; 
     return (
   <div style={{
     flex: 1,
@@ -38,16 +37,16 @@ const PreviewForm = ({ stepsBlocksData, formValues, handleEdit, handleInputChang
       alignItems: 'center',
       marginBottom: 12
     }}>
-      <h3 style={{ margin: 0 }}>Preview Form ({stepsBlocksData.title})</h3>
+      <h3 style={{ margin: 0 }}>Preview Form ({stepsBlocksData?.title})</h3>
       <button type="button" onClick={() => {
         setAddToGroup('root'); 
         setShowAddModal(true);
-        }}>Add Field</button>
+      }}>Add Field</button>
 
     </div>
 
     <form id="preview-form" className="dynamic-form">
-      {stepsBlocksData.steps.root.map((rootId, index) => (
+      {stepsBlocksData?.steps?.root?.map((rootId, index) => (
         <RenderGroup
           key={rootId}
           elementId={rootId}
