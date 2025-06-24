@@ -211,13 +211,11 @@ export const defaultInputGroups = [
   key: "country",
   type: "select",
   label: "Country",
-  inputType: "dynamic",
-  sourceCode: "function abc(){const country = [\"US\", \"India\", \"Japan\"]; return country;} abc();",
-  // options: [
-  //   { value: "US", label: "US" },
-  //   { value: "India", label: "India" },
-  //   { value: "Japan", label: "Japan" }
-  // ],
+  options: [
+    { value: "US", label: "US" },
+    { value: "India", label: "India" },
+    { value: "Japan", label: "Japan" }
+  ],
   required: true
 },
 {
@@ -225,30 +223,20 @@ export const defaultInputGroups = [
   key: "state",
   type: "select",
   label: "State",
-  inputType: "dynamic",
   required: true,
-  // dependsOn: {
-  //   field: "country",
-    // map: {
-    //   US: ["California", "Texas", "New York"],
-    //   India: ["Maharashtra", "Gujarat", "Karnataka"],
-    //   Japan: ["Tokyo", "Osaka", "Kyoto"]
-    // }
-  // },
-  dependsOn:["country"],
-  sourceCode:`
-    const state = {
+  dependsOn: {
+    field: "country",
+    map: {
       US: ["California", "Texas", "New York"],
       India: ["Maharashtra", "Gujarat", "Karnataka"],
       Japan: ["Tokyo", "Osaka", "Kyoto"]
-    };
-    return state[inputData.country] || [];
-  `,
-  visibleIf: {
-    field: "country",
-    operator: "notEquals",
-    value: ""
-  }
+    }
+  },
+  // visibleIf: {
+  //   field: "country",
+  //   operator: "notEquals",
+  //   value: ""
+  // }
 },
 ];
 
