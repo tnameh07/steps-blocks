@@ -1,17 +1,61 @@
 
 import { Pencil } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-
-const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, checkCondition }) => {
+const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, checkCondition }) => {
 
     const isVisible = !element.visibleIf || checkCondition(element.visibleIf);
     const isDisabled = element.disabledIf && checkCondition(element.disabledIf);
+    const [options, setOptions] = useState([]);
+
     if (!isVisible) return null;
     if (!stepsBlocksData || !stepsBlocksData.steps) return null;
 
-    const fieldId = (parentId != 'root') ?`${parentId}.${element.id}`:`${element.id}`;
+    const fieldId = (parentId !== 'root') ? `${parentId}.${element.id}` : `${element.id}`;
     const canMoveUp = currentIndex > 0;
     const canMoveDown = currentIndex < (stepsBlocksData.steps[parentId]?.length - 1);
+
+    // Create a stable list of dependent values to use in the useEffect dependency array
+    const dependentValues = element.dependsOn?.map(depKey => formValues[depKey]) || [];
+
+    useEffect(() => {
+        const determineOptions = async () => {
+            if (element.type !== 'select') return;
+
+            // Handle dynamic options
+            if (element.inputType === 'dynamic' && element.sourceCode) {
+                try {
+                    let data;
+                    if (element.dependsOn && element.dependsOn.length > 0) {
+                        const inputData = {};
+                        element.dependsOn.forEach(depKey => {
+                            inputData[depKey] = formValues[depKey] || null;
+                        });
+                        data = await eval(`(async (inputData) => { ${element.sourceCode} })`)(inputData);
+                    } else {
+                        data = await eval(`(async () => { ${element.sourceCode} })()`);
+                    }
+
+                    const fetchedOptions = Array.isArray(data)
+                        ? data.map(item => ({
+                            value: typeof item === 'string' ? item : item.value,
+                            label: typeof item === 'string' ? item : item.label
+                        }))
+                        : [];
+                    setOptions(fetchedOptions);
+
+                } catch (error) {
+                    console.error(`Error evaluating sourceCode for ${element.id}:`, error);
+                    setOptions([]);
+                }
+            } else {
+                // Handle static options
+                setOptions(element.options || []);
+            }
+        };
+
+        determineOptions();
+    }, [element.id, element.type, element.inputType, element.sourceCode, element.options, ...dependentValues]);
 
     switch (element.type) {
         case 'text':
@@ -27,34 +71,11 @@ const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formVa
                         value={formValues[element.key] || ''}
                         onChange={(e) => handleInputChange(e, element.key)}
                         disabled={isDisabled}
-                        style={{
-                        width: 'auto',
-                        padding: 8,
-                        border: '1px solid #ccc',
-                        borderRadius: 4,
-                        cursor: element.disabledIf && isDisabled ? 'not-allowed' : 'text',
-                        borderColor: element.disabledIf && isDisabled ? 'red' : '#ccc'
-                        }}
-
+                        style={{ width: 'auto', padding: 8, border: '1px solid #ccc', borderRadius: 4 }}
                     />
-                    <button type="button" onClick={() => handleEdit(fieldId)} style={{ marginRight: 8, display: 'flex', alignItems: 'center', padding: 4 }}>
-                    <Pencil size={16} />
-                    </button>
-
-                    <button
-                        type='button'
-                        onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
-                        disabled={!canMoveUp}
-                    >
-                        ↑
-                    </button>
-                    <button
-                        type='button'
-                        onClick={() => handleChangeSequence(parentId, fieldId, 'down')}
-                        disabled={!canMoveDown}
-                    >
-                        ↓
-                    </button>
+                    <button type="button" onClick={() => handleEdit(element.id)} style={{ display: 'flex', alignItems: 'center', padding: 4 }}><Pencil size={16} /></button>
+                    <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'up')} disabled={!canMoveUp}>↑</button>
+                    <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'down')} disabled={!canMoveDown}>↓</button>
                     {element.description && <p style={{ fontSize: '0.8em', color: '#888', marginTop: 4 }}>{element.description}</p>}
                 </div>
             );
@@ -80,20 +101,9 @@ const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formVa
                             </label>
                         ))}
                     </div>
-                    <button
-                        type='button'
-                        onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
-                        disabled={!canMoveUp}
-                    >
-                        ↑
-                    </button>
-                    <button
-                        type='button'
-                        onClick={() => handleChangeSequence(parentId, fieldId, 'down')}
-                        disabled={!canMoveDown}
-                    >
-                        ↓
-                    </button>
+                    <button type="button" onClick={() => handleEdit(element.id)} style={{ display: 'flex', alignItems: 'center', padding: 4 }}><Pencil size={16} /></button>
+                    <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'up')} disabled={!canMoveUp}>↑</button>
+                    <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'down')} disabled={!canMoveDown}>↓</button>
                 </div>
             );
 
@@ -110,145 +120,13 @@ const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formVa
                         />
                         {element.label} {element.required && <span style={{ color: 'red' }}>*</span>}
                     </label>
-                    <button
-                        type='button'
-                        onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
-                        disabled={!canMoveUp}
-                    >
-                        ↑
-                    </button>
-                    <button
-                        type='button'
-                        onClick={() => handleChangeSequence(parentId, fieldId, 'down')}
-                        disabled={!canMoveDown}
-                    >
-                        ↓
-                    </button>
+                    <button type="button" onClick={() => handleEdit(element.id)} style={{ display: 'flex', alignItems: 'center', padding: 4 }}><Pencil size={16} /></button>
+                    <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'up')} disabled={!canMoveUp}>↑</button>
+                    <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'down')} disabled={!canMoveDown}>↓</button>
                 </div>
             );
 
-        case 'select':
-            // element.inputType: 'static' || 'dynamic';
-            // const isStatic = element.inputType === 'static';
-            // const dynamicData = !isStatic? eval(element.sourceCode) : null;
-            // let dynamicOptions = isStatic? element.options : dynamicData || [];
-            // element.inputType: 'static' || 'dynamic';
-            // console.log("element :",element)
-            // console.log("sourceCode",element?.sourceCode);
-            // console.log("eval",eval(element?.sourceCode));
-            const isDynamic = element.inputType === 'dynamic';
-            let dynamicOptions = [];
-            
-            if (!isDynamic) {
-              // Static field — use options directly
-              dynamicOptions = element.options || [];
-            } else {
-                try {
-                let dynamicData;
-            
-                // If field depends on other fields (like state depends on country)
-                if (element.dependsOn && element.dependsOn.length > 0) {
-                  const inputData = {};
-                  element.dependsOn.forEach(depField => {
-                    inputData[depField] = formValues[depField];
-                  });
-                  console.log("myindput :", inputData)
-                  //  Wrap sourceCode in a function that has access to inputData
-                //   dynamicData = eval(element.sourceCode);
-                  dynamicData = eval(`
-                    (() => {
-                        const inputData = ${JSON.stringify(inputData)};
-                        ${element.sourceCode}
-                        })()
-                        `);
-                        console.log("dynamicData",dynamicData)
-                    } else {
-                        // console.log("I am inside else",dynamicData);
-                        // (async () => {
-                        //    console.log("hemant")
-                        //    dynamicData = await eval(element.sourceCode);
-                        //    console.log("devde",dynamicData);
-                        // })()
-                
-                    //  No dependency — simple eval
-                    dynamicData = eval(element.sourceCode);
-                     
-                    // console.log( "",dynamicData )
-                    // dynamicData = eval(`
-                    //     (async () => {
-                    //         ${element.sourceCode}
-                    //     })()
-                    // `);
-                 
-
-                    // console.log("I am inside else",dynamicData);
-                }
-            
-                //  Normalize the options
-                dynamicOptions = Array.isArray(dynamicData)
-                  ? dynamicData.map(item => ({
-                      value: typeof item === 'string' ? item : item.value,
-                      label: typeof item === 'string' ? item : item.label
-                    }))
-                  : [];
-                  console.log("dynamicOptions",dynamicOptions)
-              } catch (error) {
-                console.error('Error evaluating sourceCode:', error);
-                dynamicOptions = [];
-              }
-            }
-            
- // Handle dependsOn logic for fields that depend on other fields
-//  if (element.dependsOn && element.dependsOn.length > 0) {
-//     try {
-//         // Create inputData object with current form values for dependent fields
-//         const inputData = {};
-//         element.dependsOn.forEach(depField => {
-//             inputData[depField] = formValues[depField];
-//         });
-
-//         // Evaluate the sourceCode with inputData context
-//         const dependentData = eval(element.sourceCode);
-        
-//         if (Array.isArray(dependentData)) {
-//             dynamicOptions = dependentData.map(item => ({
-//                 value: typeof item === 'string' ? item : item.value,
-//                 label: typeof item === 'string' ? item : item.label
-//             }));
-//         } else {
-//             dynamicOptions = [];
-//         }
-//     } catch (error) {
-//         console.error('Error evaluating dependent sourceCode:', error);
-//         dynamicOptions = [];
-//     }
-// }
-// console.log("dynamicOptions for", element.id, ":", dynamicOptions);
-
-            // Support for dependsOn
-            // if (element.dependsOn && element.dependsOn.field && element.dependsOn.map) {
-            //     const depField = element.dependsOn.field;
-            //     const selectedValue = formValues[depField];
-            //     const mappedOptions = element.dependsOn.map[selectedValue] || [];
-            //     dynamicOptions = mappedOptions.map(opt => ({
-            //         value: opt,
-            //         label: opt
-            //     }));
-            //     console.log("mapped options:",dynamicOptions);
-            // }
-            // if (element.dependsOn && element.dependsOn.length) {
-            //     const depField = element.dependsOn.map(field => field);
-
-            //     const selectedValue = formValues[depField];
-            //     const mappedOptions = element.dependsOn.map[selectedValue] || [];
-            //     dynamicOptions = mappedOptions.map(opt => ({
-            //         value: opt,
-            //         label: opt
-            //     }));
-            //     console.log("mapped options:",dynamicOptions);
-            // }
-                
-
+        case 'select': {
             return (
                 <div key={element.id} id={fieldId} className={`field-${element.type}`} style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <label style={{ display: 'block', marginBottom: 4 }}>
@@ -258,39 +136,19 @@ const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formVa
                         value={formValues[element.key] || ''}
                         onChange={(e) => handleInputChange(e, element.key)}
                         disabled={isDisabled}
-                        style={{
-                            width: 'auto',
-                            padding: 8,
-                            border: '1px solid #ccc',
-                            borderRadius: 4,
-                            cursor: element.disabledIf && isDisabled ? 'not-allowed' : 'text',
-                            borderColor: element.disabledIf && isDisabled ? 'red' : '#ccc'
-                            }}
-
+                        style={{ width: 'auto', padding: 8, border: '1px solid #ccc', borderRadius: 4 }}
                     >
-                        <option value="">Select an option</option>
-                        {dynamicOptions.map(opt => (
-                            <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                            </option>
+                        <option value="">{element.placeholder || `Select ${element.label}`}</option>
+                        {options.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
                     </select>
-                    <button
-                        type='button'
-                        onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
-                        disabled={!canMoveUp}
-                    >
-                        ↑
-                    </button>
-                    <button
-                        type='button'
-                        onClick={() => handleChangeSequence(parentId, fieldId, 'down')}
-                        disabled={!canMoveDown}
-                    >
-                        ↓
-                    </button>
+                    <button type="button" onClick={() => handleEdit(element.id)} style={{ display: 'flex', alignItems: 'center', padding: 4 }}><Pencil size={16} /></button>
+                    <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'up')} disabled={!canMoveUp}>↑</button>
+                    <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'down')} disabled={!canMoveDown}>↓</button>
                 </div>
             );
+        }
 
         default:
             return (
