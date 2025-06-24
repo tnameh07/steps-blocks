@@ -226,17 +226,8 @@ export const defaultInputGroups = [
   type: "select",
   label: "State",
   inputType: "dynamic",
-  required: true,
-  // dependsOn: {
-  //   field: "country",
-    // map: {
-    //   US: ["California", "Texas", "New York"],
-    //   India: ["Maharashtra", "Gujarat", "Karnataka"],
-    //   Japan: ["Tokyo", "Osaka", "Kyoto"]
-    // }
-  // },
-  dependsOn:["country"],
-  sourceCode:`
+  dependsOn: ["country", "subscribe"], // used for both data and visibility
+  sourceCode: `
     const state = {
       US: ["California", "Texas", "New York"],
       India: ["Maharashtra", "Gujarat", "Karnataka"],
@@ -244,12 +235,11 @@ export const defaultInputGroups = [
     };
     return state[inputData.country] || [];
   `,
-  visibleIf: {
-    field: "country",
-    operator: "notEquals",
-    value: ""
-  }
-},
+  visibilityCode: `
+    return inputData.country === "India" && inputData.subscribe === true;
+  `
+}
+
 ];
 
 export function creatingBlock(groups, parentKey) {

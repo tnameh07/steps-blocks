@@ -2,11 +2,32 @@
 import { Pencil } from 'lucide-react';
 
 
-<<<<<<< Updated upstream
-const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, setStepsBlocksData , checkCondition }) => {
-=======
-const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, checkCondition }) => {
->>>>>>> Stashed changes
+const evaluateVisibility = (element, formValues) => {
+    if (!element.visibilityCode) return true; // default to visible if no code provided
+    // console.log("FormValuescdcedcew:",formValues);
+    
+    try {
+        const inputData = {};
+        (element.dependsOn || []).forEach(dep => {
+            inputData[dep] = formValues[dep];
+        });
+        // console.log("FormValues:",inputData);
+
+    // Evaluate the visibilityCode
+    return eval(`
+      (() => {
+        const inputData = ${JSON.stringify(inputData)};
+        ${element.visibilityCode}
+      })()
+    `);
+  } catch (error) {
+    console.error("Visibility evaluation failed:", error);
+    return false;
+  }
+};
+
+const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence,setStepsBlocksData, checkCondition }) => {
+
 
     const isVisible = !element.visibleIf || checkCondition(element.visibleIf);
     const isDisabled = element.disabledIf && checkCondition(element.disabledIf);
@@ -132,6 +153,10 @@ const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formVa
             );
 
         case 'select':
+            if(element.inputType === 'dynamic'){
+            const isVisible = evaluateVisibility(element, formValues);
+            if(!isVisible) return null;
+            }
             // element.inputType: 'static' || 'dynamic';
             // const isStatic = element.inputType === 'static';
             // const dynamicData = !isStatic? eval(element.sourceCode) : null;
@@ -250,7 +275,6 @@ const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formVa
             //     console.log("mapped options:",dynamicOptions);
             // }
                 
-
             return (
                 <div key={element.id} id={fieldId} className={`field-${element.type}`} style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <label style={{ display: 'block', marginBottom: 4 }}>

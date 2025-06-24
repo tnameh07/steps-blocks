@@ -48,7 +48,7 @@ const Form = () => {
   };
 
   useEffect(() => {
-<<<<<<< Updated upstream
+//  Updated upstream
     const blocks = creatingBlock(inputGroups, "");
     const sequence = creatingFirstSequence(inputGroups);
     const finaljsona = {
@@ -65,7 +65,8 @@ const Form = () => {
     if (stepsBlocksData && !isUpdatingFromJson.current && isUpdatingFromGui.current) {
       const newInputGroups = reconstructInputGroups(stepsBlocksData);
       setInputGroups(newInputGroups);
-=======
+    }
+// =======
     const fetchAndSetData = async () => {
       const data = defaultInputGroups // await fetchData();
       if (data && data.length) {
@@ -76,7 +77,7 @@ const Form = () => {
         setJsonText(JSON.stringify(data, null, 2));
       }
     };
-
+    
     fetchAndSetData();
   }, []);
 
@@ -90,13 +91,13 @@ const Form = () => {
     const newInputGroups = reconstructInputGroups(stepsBlocksData);
       // setInputGroups(newInputGroups);
       console.log("newInputGroups JSON: ", newInputGroups);
->>>>>>> Stashed changes
+// >>>>>>> Stashed changes
       setJsonText(JSON.stringify(newInputGroups, null, 2));
       isUpdatingFromGui.current = false;
     }
   }, [stepsBlocksData]);
 
-<<<<<<< Updated upstream
+// <<<<<<< Updated upstream
   useEffect(() => {
     if (editData) {
       const newInputGroups = reconstructInputGroups(stepsBlocksData);
@@ -106,9 +107,9 @@ const Form = () => {
     }
   }, [editData]);
 
-=======
+// =======
   
->>>>>>> Stashed changes
+// >>>>>>> Stashed changes
 
   const handleChangeSequence = (group_id, field_id, direction) => {
     isUpdatingFromGui.current = true; // Set flag before GUI changes
