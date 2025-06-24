@@ -73,7 +73,7 @@ const Form = () => {
 
   useEffect(() => {
     const fetchAndSetData = async () => {
-      const data = await fetchData();
+      const data = defaultInputGroups // await fetchData();
       if (data && data.length) {
         const blocksSequenceData = await createBlocksSequence(data);
         setStepsBlocksData(blocksSequenceData);
