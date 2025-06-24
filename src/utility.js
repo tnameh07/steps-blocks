@@ -212,7 +212,16 @@ export const defaultInputGroups = [
   type: "select",
   label: "Country",
   inputType: "dynamic",
-  sourceCode: "function abc(){const country = [\"US\", \"India\", \"Japan\"]; return country;} abc();",
+  sourceCode: `
+   try {
+      const getCountry = await fetch('https://flow.sokt.io/func/scriEozEsv6d/?fields=country');
+      const country = await getCountry.json();
+      return country;
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  `,
+  // "function abc(){const country = [\"US\", \"India\", \"Japan\"]; return country;} abc();",
   // options: [
   //   { value: "US", label: "US" },
   //   { value: "India", label: "India" },
@@ -227,23 +236,8 @@ export const defaultInputGroups = [
   label: "State",
   inputType: "dynamic",
   required: true,
-  // dependsOn: {
-  //   field: "country",
-    // map: {
-    //   US: ["California", "Texas", "New York"],
-    //   India: ["Maharashtra", "Gujarat", "Karnataka"],
-    //   Japan: ["Tokyo", "Osaka", "Kyoto"]
-    // }
-  // },
-  dependsOn:["country"],
-  sourceCode:`
-    const state = {
-      US: ["California", "Texas", "New York"],
-      India: ["Maharashtra", "Gujarat", "Karnataka"],
-      Japan: ["Tokyo", "Osaka", "Kyoto"]
-    };
-    return state[inputData.country] || [];
-  `,
+  dependsOn: ["country"],
+  sourceCode: "try { if (!inputData.country) { return []; } const res = await fetch(`https://flow.sokt.io/func/scriEozEsv6d/?fields=state&country=${inputData.country}`); if (!res.ok) { return []; } const states = await res.json(); return states; } catch (e) { console.error(e); return []; }",
   visibleIf: {
     field: "country",
     operator: "notEquals",
