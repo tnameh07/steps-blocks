@@ -1,11 +1,12 @@
 
-
-
-
 import { Pencil } from 'lucide-react';
 
 
+<<<<<<< Updated upstream
 const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, setStepsBlocksData , checkCondition }) => {
+=======
+const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, checkCondition }) => {
+>>>>>>> Stashed changes
 
     const isVisible = !element.visibleIf || checkCondition(element.visibleIf);
     const isDisabled = element.disabledIf && checkCondition(element.disabledIf);
@@ -131,21 +132,123 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
             );
 
         case 'select':
-
-            let dynamicOptions = element.options;
+            // element.inputType: 'static' || 'dynamic';
+            // const isStatic = element.inputType === 'static';
+            // const dynamicData = !isStatic? eval(element.sourceCode) : null;
+            // let dynamicOptions = isStatic? element.options : dynamicData || [];
+            // element.inputType: 'static' || 'dynamic';
+            // console.log("element :",element)
+            // console.log("sourceCode",element?.sourceCode);
+            // console.log("eval",eval(element?.sourceCode));
+            const isDynamic = element.inputType === 'dynamic';
+            let dynamicOptions = [];
             
+            if (!isDynamic) {
+              // Static field — use options directly
+              dynamicOptions = element.options || [];
+            } else {
+                try {
+                let dynamicData;
+            
+                // If field depends on other fields (like state depends on country)
+                if (element.dependsOn && element.dependsOn.length > 0) {
+                  const inputData = {};
+                  element.dependsOn.forEach(depField => {
+                    inputData[depField] = formValues[depField];
+                  });
+                //   console.log("myindput :", inputData)
+                  //  Wrap sourceCode in a function that has access to inputData
+                //   dynamicData = eval(element.sourceCode);
+                  dynamicData = eval(`
+                    (() => {
+                        const inputData = ${JSON.stringify(inputData)};
+                        ${element.sourceCode}
+                        })()
+                        `);
+                    } else {
+                        // console.log("I am inside else",dynamicData);
+                        // (async () => {
+                        //    console.log("hemant")
+                        //    dynamicData = await eval(element.sourceCode);
+                        //    console.log("devde",dynamicData);
+                        // })()
+                
+                    //  No dependency — simple eval
+                    dynamicData = eval(element.sourceCode);
+                     
+                    // console.log( "",dynamicData )
+                    // dynamicData = eval(`
+                    //     (async () => {
+                    //         ${element.sourceCode}
+                    //     })()
+                    // `);
+                 
+
+                    // console.log("I am inside else",dynamicData);
+                }
+            
+                //  Normalize the options
+                dynamicOptions = Array.isArray(dynamicData)
+                  ? dynamicData.map(item => ({
+                      value: typeof item === 'string' ? item : item.value,
+                      label: typeof item === 'string' ? item : item.label
+                    }))
+                  : [];
+              } catch (error) {
+                console.error('Error evaluating sourceCode:', error);
+                dynamicOptions = [];
+              }
+            }
+            
+ // Handle dependsOn logic for fields that depend on other fields
+//  if (element.dependsOn && element.dependsOn.length > 0) {
+//     try {
+//         // Create inputData object with current form values for dependent fields
+//         const inputData = {};
+//         element.dependsOn.forEach(depField => {
+//             inputData[depField] = formValues[depField];
+//         });
+
+//         // Evaluate the sourceCode with inputData context
+//         const dependentData = eval(element.sourceCode);
+        
+//         if (Array.isArray(dependentData)) {
+//             dynamicOptions = dependentData.map(item => ({
+//                 value: typeof item === 'string' ? item : item.value,
+//                 label: typeof item === 'string' ? item : item.label
+//             }));
+//         } else {
+//             dynamicOptions = [];
+//         }
+//     } catch (error) {
+//         console.error('Error evaluating dependent sourceCode:', error);
+//         dynamicOptions = [];
+//     }
+// }
+// console.log("dynamicOptions for", element.id, ":", dynamicOptions);
 
             // Support for dependsOn
-            if (element.dependsOn && element.dependsOn.field && element.dependsOn.map) {
-                const depField = element.dependsOn.field;
-                const selectedValue = formValues[depField];
-                const mappedOptions = element.dependsOn.map[selectedValue] || [];
-                dynamicOptions = mappedOptions.map(opt => ({
-                    value: opt,
-                    label: opt
-                }));
-                console.log("mapped options:",dynamicOptions);
-            }
+            // if (element.dependsOn && element.dependsOn.field && element.dependsOn.map) {
+            //     const depField = element.dependsOn.field;
+            //     const selectedValue = formValues[depField];
+            //     const mappedOptions = element.dependsOn.map[selectedValue] || [];
+            //     dynamicOptions = mappedOptions.map(opt => ({
+            //         value: opt,
+            //         label: opt
+            //     }));
+            //     console.log("mapped options:",dynamicOptions);
+            // }
+            // if (element.dependsOn && element.dependsOn.length) {
+            //     const depField = element.dependsOn.map(field => field);
+
+            //     const selectedValue = formValues[depField];
+            //     const mappedOptions = element.dependsOn.map[selectedValue] || [];
+            //     dynamicOptions = mappedOptions.map(opt => ({
+            //         value: opt,
+            //         label: opt
+            //     }));
+            //     console.log("mapped options:",dynamicOptions);
+            // }
                 
 
             return (
