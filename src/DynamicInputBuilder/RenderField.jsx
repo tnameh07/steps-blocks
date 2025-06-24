@@ -144,7 +144,7 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                     value: opt,
                     label: opt
                 }));
-                console.log("mapped options:",dynamicOptions);
+                
             }
                 
 

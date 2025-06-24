@@ -7,7 +7,7 @@ const PreviewForm = ({ stepsBlocksData, formValues, handleEdit, handleInputChang
     const [addToGroup, setAddToGroup] = useState(null);
 
     const checkCondition = (condition) => {
-      // console.log("condition",condition)
+
       if (!condition) return false;
       const { field, operator, value } = condition;
       const targetValue = formValues[field] ?? "";
@@ -21,8 +21,7 @@ const PreviewForm = ({ stepsBlocksData, formValues, handleEdit, handleInputChang
       }
     };
     
-    if (!stepsBlocksData || !stepsBlocksData.steps || !stepsBlocksData.blocks) return null;
-    console.log("stepsBlocksData",stepsBlocksData)
+    if (!stepsBlocksData || !stepsBlocksData.steps || !stepsBlocksData.blocks) return null; 
     return (
   <div style={{
     flex: 1,
