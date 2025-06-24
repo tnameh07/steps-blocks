@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import InputJsonBuilder from './DynamicInputBuilder/InputJsonBuilder.jsx';
 import PreviewForm from './DynamicInputBuilder/PreviewForm.jsx';
-import EditModel from './EditModel.jsx';
+import FieldModal from './DynamicInputBuilder/FieldModal.jsx';
 import { changeSequence, creatingBlock, creatingFirstSequence, defaultInputGroups, reconstructInputGroups } from './utility.js';
 
 const Form = () => {
@@ -10,14 +10,12 @@ const Form = () => {
   const [stepsBlocksData, setStepsBlocksData] = useState(null);
   const [jsonError, setJsonError] = useState(null);
   const [formValues, setFormValues] = useState({});
-  const [editData, setEditData] = useState(null);
-  const [editPath, setEditPath] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
   const isUpdatingFromJson = useRef(false);
   const isUpdatingFromGui = useRef(false);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [addToGroup, setAddToGroup] = useState(null);
-//  const isFirstRender = useRef(true);
+
+  // State for the unified modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalConfig, setModalConfig] = useState({ mode: 'add', data: null, parentId: null });
 
   const fetchData = async () => {
     try {
@@ -29,6 +27,7 @@ const Form = () => {
       console.error('Error fetching data:', error);
     }
   }
+
   const createBlocksSequence = async (inputGroups) => {
     const blocks = await creatingBlock(inputGroups, "");
     const sequence = await creatingFirstSequence(inputGroups);
@@ -64,11 +63,62 @@ const Form = () => {
       [fieldKey]: type === 'checkbox' ? checked : value
     }));
   });
-  const handleEdit = (id) => {
-    const block = stepsBlocksData.blocks[id];
-    setEditData(block);
-    setEditPath(id);
-    setShowEditModal(true);
+
+  // Handlers for the unified modal
+  const handleOpenModal = useCallback((mode, id, parentId) => {
+    const fieldId = (parentId != 'root') ?`${parentId}.${id}`:`${id}`;
+    if (mode === 'edit') {
+      console.log("edit", id, parentId)
+      console.log("fieldId", fieldId)
+      setModalConfig({ mode: 'edit', data: stepsBlocksData.blocks[parentId], parentId: null });
+    } else { // 'add' mode
+      const newFieldTemplate = { id: '', key: '', label: '', type: 'text', required: false, description: '', placeholder: '' };
+      setModalConfig({ mode: 'add', data: newFieldTemplate, parentId: id });
+    }
+    setIsModalOpen(true);
+  }, [stepsBlocksData]);
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setModalConfig({ mode: 'add', data: null, parentId: null }); // Reset config
+  };
+
+  const handleSaveModal = (formData) => {
+    const { mode, parentId } = modalConfig;
+    const fieldId = formData.id;
+
+    if (mode === 'add') {
+      if (!fieldId || !formData.key) {
+        alert('Field ID and Key are required.');
+        return;
+      }
+      if (stepsBlocksData.blocks[fieldId]) {
+        alert(`Field with ID "${fieldId}" already exists.`);
+        return;
+      }
+
+      setStepsBlocksData(prev => {
+        const updated = { ...prev };
+        updated.blocks[fieldId] = formData; // Add new block
+        if (prev.steps[parentId]) {
+          updated.steps[parentId] = [...prev.steps[parentId], fieldId]; // Add to parent's children
+        } else {
+          updated.steps[parentId] = [fieldId];
+        }
+        return updated;
+      });
+
+    } else { // 'edit' mode
+      setStepsBlocksData(prev => ({
+        ...prev,
+        blocks: {
+          ...prev.blocks,
+          [fieldId]: formData
+        }
+      }));
+    }
+
+    handleCloseModal();
   };
 
   useEffect(() => {
@@ -86,13 +136,6 @@ const Form = () => {
     fetchAndSetData();
   }, []);
 
-  // useEffect(() => {
-  //   const blocks = creatingBlock(inputGroups, "");
-  //   const sequence = creatingFirstSequence(inputGroups);
-  //   const finaljsona = {
-  //     title: "Dynamic Form Preview",
-  //     steps: sequence,
-  //     blocks: blocks
   useEffect(() => {
     // if (isFirstRender.current) {
     //   isFirstRender.current = false;
@@ -109,18 +152,21 @@ const Form = () => {
     // 
   }, [stepsBlocksData]);
 
-  //     isUpdatingFromGui.current = true;
-  //   }
-  // }, [editData]);
-
-
   const handleChangeSequence = (group_id, field_id, direction) => {
     isUpdatingFromGui.current = true; // Set flag before GUI changes
     changeSequence(stepsBlocksData, setStepsBlocksData, group_id, field_id, direction);
   };
 
   return (
-    <div style={{ display: 'flex', height: '80vh', gap: 24 }}>
+    <>
+      <FieldModal 
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSaveModal}
+        initialData={modalConfig.data}
+        mode={modalConfig.mode}
+      />
+      <div style={{ display: 'flex', height: '80vh', gap: 24 }}>
       {/* JSON Editor Block */}
       <InputJsonBuilder 
       handleJsonChange={handleJsonChange} 
@@ -131,20 +177,13 @@ const Form = () => {
       <PreviewForm
         stepsBlocksData={stepsBlocksData}
         formValues={formValues}
-        handleEdit={handleEdit}
+        handleOpenModal={handleOpenModal}
         handleInputChange={handleInputChange}
         handleChangeSequence={handleChangeSequence}
         setStepsBlocksData={setStepsBlocksData}
       />
-      {/* Edit Modal */}
-      {showEditModal &&
-        <EditModel
-          editPath={editPath}
-          setEditData={setEditData}
-          editData={editData}
-          setStepsBlocksData={setStepsBlocksData}
-          setShowEditModal={setShowEditModal} />}
     </div>
+    </>
   );
 };
 

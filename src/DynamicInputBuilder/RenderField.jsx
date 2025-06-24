@@ -2,7 +2,7 @@
 import { Pencil } from 'lucide-react';
 
 
-const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, checkCondition }) => {
+const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleOpenModal, handleInputChange, handleChangeSequence, checkCondition }) => {
 
     const isVisible = !element.visibleIf || checkCondition(element.visibleIf);
     const isDisabled = element.disabledIf && checkCondition(element.disabledIf);
@@ -37,7 +37,7 @@ const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formVa
                         }}
 
                     />
-                    <button type="button" onClick={() => handleEdit(fieldId)} style={{ marginRight: 8, display: 'flex', alignItems: 'center', padding: 4 }}>
+                    <button type="button" onClick={() => handleOpenModal('edit', element.id, fieldId)} style={{ marginRight: 8, display: 'flex', alignItems: 'center', padding: 4 }}>
                     <Pencil size={16} />
                     </button>
 
@@ -80,6 +80,9 @@ const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formVa
                             </label>
                         ))}
                     </div>
+                    <button type="button" onClick={() => handleOpenModal('edit', element.id, fieldId)} style={{ marginRight: 8, display: 'flex', alignItems: 'center', padding: 4 }}>
+                        <Pencil size={16} />
+                    </button>
                     <button
                         type='button'
                         onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
@@ -110,6 +113,9 @@ const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formVa
                         />
                         {element.label} {element.required && <span style={{ color: 'red' }}>*</span>}
                     </label>
+                    <button type="button" onClick={() => handleOpenModal('edit', element.id, fieldId)} style={{ marginRight: 8, display: 'flex', alignItems: 'center', padding: 4 }}>
+                        <Pencil size={16} />
+                    </button>
                     <button
                         type='button'
                         onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
@@ -127,76 +133,84 @@ const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formVa
                 </div>
             );
 
-        case 'select':
-            // element.inputType: 'static' || 'dynamic';
-            // const isStatic = element.inputType === 'static';
-            // const dynamicData = !isStatic? eval(element.sourceCode) : null;
-            // let dynamicOptions = isStatic? element.options : dynamicData || [];
-            // element.inputType: 'static' || 'dynamic';
-            // console.log("element :",element)
-            // console.log("sourceCode",element?.sourceCode);
-            // console.log("eval",eval(element?.sourceCode));
+        case 'select': {
             const isDynamic = element.inputType === 'dynamic';
             let dynamicOptions = [];
             
             if (!isDynamic) {
-              // Static field — use options directly
               dynamicOptions = element.options || [];
             } else {
                 try {
-                let dynamicData;
+                    let dynamicData;
             
-                // If field depends on other fields (like state depends on country)
-                if (element.dependsOn && element.dependsOn.length > 0) {
-                  const inputData = {};
-                  element.dependsOn.forEach(depField => {
-                    inputData[depField] = formValues[depField];
-                  });
-                  console.log("myindput :", inputData)
-                  //  Wrap sourceCode in a function that has access to inputData
-                //   dynamicData = eval(element.sourceCode);
-                  dynamicData = eval(`
-                    (() => {
-                        const inputData = ${JSON.stringify(inputData)};
-                        ${element.sourceCode}
+                    if (element.dependsOn && element.dependsOn.length > 0) {
+                      const inputData = {};
+                      element.dependsOn.forEach(depField => {
+                        inputData[depField] = formValues[depField];
+                      });
+                      dynamicData = eval(`
+                        (() => {
+                            const inputData = ${JSON.stringify(inputData)};
+                            ${element.sourceCode}
                         })()
-                        `);
-                        console.log("dynamicData",dynamicData)
+                      `);
                     } else {
-                        // console.log("I am inside else",dynamicData);
-                        // (async () => {
-                        //    console.log("hemant")
-                        //    dynamicData = await eval(element.sourceCode);
-                        //    console.log("devde",dynamicData);
-                        // })()
-                
-                    //  No dependency — simple eval
-                    dynamicData = eval(element.sourceCode);
-                     
-                    // console.log( "",dynamicData )
-                    // dynamicData = eval(`
-                    //     (async () => {
-                    //         ${element.sourceCode}
-                    //     })()
-                    // `);
-                 
-
-                    // console.log("I am inside else",dynamicData);
-                }
+                        dynamicData = eval(element.sourceCode);
+                    }
             
-                //  Normalize the options
-                dynamicOptions = Array.isArray(dynamicData)
-                  ? dynamicData.map(item => ({
-                      value: typeof item === 'string' ? item : item.value,
-                      label: typeof item === 'string' ? item : item.label
-                    }))
-                  : [];
-                  console.log("dynamicOptions",dynamicOptions)
-              } catch (error) {
-                console.error('Error evaluating sourceCode:', error);
-                dynamicOptions = [];
-              }
+                    dynamicOptions = Array.isArray(dynamicData)
+                      ? dynamicData.map(item => ({
+                          value: typeof item === 'string' ? item : item.value,
+                          label: typeof item === 'string' ? item : item.label
+                        }))
+                      : [];
+                } catch (error) {
+                    console.error('Error evaluating sourceCode:', error);
+                    dynamicOptions = [];
+                }
             }
+
+            return (
+                <div key={element.id} id={fieldId} className={`field-${element.type}`} style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <label style={{ display: 'block', marginBottom: 4 }}>
+                        {element.label} {element.required && <span style={{ color: 'red' }}>*</span>}
+                    </label>
+                    <select
+                        value={formValues[element.key] || ''}
+                        onChange={(e) => handleInputChange(e, element.key)}
+                        disabled={isDisabled}
+                        style={{
+                            width: 'auto',
+                            padding: 8,
+                            border: '1px solid #ccc',
+                            borderRadius: 4,
+                        }}
+                    >
+                        <option value="">{element.placeholder || `Select ${element.label}`}</option>
+                        {dynamicOptions.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                    </select>
+                    <button type="button" onClick={() => handleOpenModal('edit', element.id, fieldId)} style={{ marginRight: 8, display: 'flex', alignItems: 'center', padding: 4 }}>
+                        <Pencil size={16} />
+                    </button>
+                    <button
+                        type='button'
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'up')}
+                        disabled={!canMoveUp}
+                    >
+                        ↑
+                    </button>
+                    <button
+                        type='button'
+                        onClick={() => handleChangeSequence(parentId, fieldId, 'down')}
+                        disabled={!canMoveDown}
+                    >
+                        ↓
+                    </button>
+                </div>
+            );
+        }
             
  // Handle dependsOn logic for fields that depend on other fields
 //  if (element.dependsOn && element.dependsOn.length > 0) {

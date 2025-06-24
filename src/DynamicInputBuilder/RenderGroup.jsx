@@ -3,7 +3,7 @@ import RenderField from './RenderField';
 import { Pencil } from 'lucide-react';
 
 
-const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, checkCondition, setShowAddModal, setAddToGroup}) => {
+const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formValues, handleOpenModal, handleInputChange, handleChangeSequence, checkCondition }) => {
    
     const element = stepsBlocksData?.blocks[elementId];
     if (!element) {
@@ -25,7 +25,7 @@ const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formV
             currentIndex={currentIndex}
             stepsBlocksData={stepsBlocksData}
             formValues={formValues}
-            handleEdit={handleEdit}
+            handleOpenModal={handleOpenModal}
             handleInputChange={handleInputChange}
             handleChangeSequence={handleChangeSequence}
             checkCondition={checkCondition}
@@ -62,10 +62,8 @@ const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formV
 
         {/* Edit and Add buttons on right */}
         <div>
-          <button type="button" onClick={() => handleEdit(elementId)} style={{ marginRight: 8 }}>Edit Field</button>
-          <button type="button" onClick={() => {setAddToGroup(elementId); // tell Form.jsx which group to add to
-                setShowAddModal(true);    // open modal
-            }}>Add Field</button>
+          <button type="button" onClick={() => handleOpenModal('edit', elementId ,groupId)} style={{ marginRight: 8 }}>Edit</button>
+          <button type="button" onClick={() => handleOpenModal('add', elementId, groupId)}>Add Field</button>
         </div>
       </div>
 
@@ -78,12 +76,10 @@ const RenderGroup = ({ elementId, parentId, currentIndex, stepsBlocksData, formV
             currentIndex={childIndex}
             stepsBlocksData={stepsBlocksData}
             formValues={formValues}
-            handleEdit={handleEdit}
+            handleOpenModal={handleOpenModal}
             handleInputChange={handleInputChange}
             handleChangeSequence={handleChangeSequence}
             checkCondition={checkCondition}
-            setShowAddModal={setShowAddModal}
-            setAddToGroup={setAddToGroup}
           />
         )}
       </div>

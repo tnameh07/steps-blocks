@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react';
 import { defaultInputGroups, creatingBlock, creatingFirstSequence, changeSequence } from './utility.js';
-
+import RenderGroup from './DynamicInputBuilder/RenderGroup.jsx';
+import FieldModal from './DynamicInputBuilder/FieldModal.jsx';
 
 const Form = () => {
   const [jsonText, setJsonText] = useState(JSON.stringify(defaultInputGroups, null, 2));
   const [inputGroups, setInputGroups] = useState(defaultInputGroups);
   const [stepsBlocksData, setStepsBlocksData] = useState(null);
   const [jsonError, setJsonError] = useState(null);
-  const [formValues, setFormValues] = useState({}); // New state for form values
+  const [formValues, setFormValues] = useState({}); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalConfig, setModalConfig] = useState({ mode: 'add', data: null, parentId: null });
 
-  // Parse JSON editor input
   const handleJsonChange = (e) => {
     const value = e.target.value;
     setJsonText(value);
@@ -22,7 +24,6 @@ const Form = () => {
     }
   };
 
-  // Handle input changes for form fields
   const handleInputChange = (e, fieldKey) => {
     const { type, name, value, checked } = e.target;
     setFormValues(prevValues => ({
@@ -31,29 +32,79 @@ const Form = () => {
     }));
   };
 
-  // const data = stepsBlocksData ? changeSequence(stepsBlocksData,"personal-info", 0, "personal-info.email") : null;
-  // console.log("DATA:", data);
-  
+  const handleOpenModal = useCallback((mode, id, parentId) => {
+    console.log("mode, id", mode, id, parentId)
+    const fieldId = (parentId != 'root') ?`${parentId}.${id}`:`${id}`;
+    console.log("fieldId", fieldId)
+    if (mode === 'edit') {
+      console.log("fieldId", fieldId)
+      setModalConfig({ mode: 'edit', data: stepsBlocksData.blocks[fieldId], parentId: null });
+    } else { 
+      const newFieldTemplate = { id: '', key: '', label: '', type: 'text', required: false, description: '', placeholder: '' };
+      setModalConfig({ mode: 'add', data: newFieldTemplate, parentId: fieldId });
+    }
+    setIsModalOpen(true);
+  }, [stepsBlocksData]);
 
-useEffect(()=>{
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setModalConfig({ mode: 'add', data: null, parentId: null }); 
+  };
 
-  const blocks = creatingBlock(inputGroups, "");
-  const sequence = creatingFirstSequence(inputGroups);
+  const handleSaveModal = (formData) => {
+    const { mode, parentId } = modalConfig;
+    const fieldId = formData.id;
 
-  const finaljsona = { 
-    title: "Dynamic Form Preview",
-    steps: sequence,
-    blocks: blocks }
-  setStepsBlocksData(finaljsona);
-  console.log("FINAL JSON:", finaljsona);
+    if (mode === 'add') {
+      if (!fieldId || !formData.key) {
+        alert('Field ID and Key are required.');
+        return;
+      }
+      if (stepsBlocksData.blocks[fieldId]) {
+        alert(`Field with ID "${fieldId}" already exists.`);
+        return;
+      }
 
-}, [inputGroups]);
+      setStepsBlocksData(prev => {
+        const updated = { ...prev };
+        updated.blocks[fieldId] = formData; 
+        if (prev.steps[parentId]) {
+          updated.steps[parentId] = [...prev.steps[parentId], fieldId]; 
+        } else {
+          updated.steps[parentId] = [fieldId];
+        }
+        return updated;
+      });
+
+    } else { 
+      setStepsBlocksData(prev => ({
+        ...prev,
+        blocks: {
+          ...prev.blocks,
+          [fieldId]: formData
+        }
+      }));
+    }
+
+    handleCloseModal();
+  };
+
+  useEffect(()=>{
+    const blocks = creatingBlock(inputGroups, "");
+    const sequence = creatingFirstSequence(inputGroups);
+
+    const finaljsona = { 
+      title: "Dynamic Form Preview",
+      steps: sequence,
+      blocks: blocks }
+    setStepsBlocksData(finaljsona);
+    console.log("FINAL JSON:", finaljsona);
+
+  }, [inputGroups]);
 
   function previewForm(stepsBlocksData) {
     if (!stepsBlocksData || !stepsBlocksData.steps || !stepsBlocksData.blocks) return null;
 
-
-    // Render individual input fields
     function renderField(element, index) {
 
       switch (element.type) {
@@ -64,7 +115,7 @@ useEffect(()=>{
                 {element.label} {element.required && <span style={{ color: 'red' }}>*</span>}
               </label>
               <input
-                type={element.inputType || 'text'} // Use inputType or default to 'text'
+                type={element.inputType || 'text'} 
                 placeholder={element.placeholder || element.label}
                 required={element.required}
                 value={formValues[element.key] || ''}
@@ -87,7 +138,7 @@ useEffect(()=>{
                   <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <input
                       type="radio"
-                      name={element.key} // Name attribute is important for radio groups
+                      name={element.key} 
                       value={opt.value}
                       checked={formValues[element.key] === opt.value}
                       onChange={(e) => handleInputChange(e, element.key)}
@@ -148,78 +199,43 @@ useEffect(()=>{
       }
     }
 
-    // Render groups, sections, and repeaters
-    function renderGroup(elementId, index) {
+    function renderGroup(elementId, index, parentId) {
       console.log("elementId :" , elementId)
       const element = stepsBlocksData.blocks[elementId];
-      console.log("element found:", element);
-      if (!element) {
-        console.warn(`Element with ID '${elementId}' not found in blocks.`);
-        return null;
-      }
 
-      // If it's a field (not a container), render it directly
-      if (element.type === 'text' || element.type === 'radio' || element.type === 'checkbox' || element.type === 'select') {
-        return renderField(element,index);
-      }
-
-      // Handle container types (section, group, repeater)
-      switch (element.type) {
-        case 'section':
-          return (
-            <div key={element.id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, marginBottom: 16 }}>
-              <h4 style={{ marginTop: 0, marginBottom: 12 }}>{element.label}</h4> 
-              {/* <button onClick={() => {}}>↑</button> */}
-              {element.description && <p style={{ fontSize: '0.9em', color: '#666' }}>{element.description}</p>}
-              <div style={{ paddingLeft: 8 }}>
-                {element.children && element.children.map((childId, index) => renderGroup(childId, index))}
-              </div>
-            </div>
-          );
-        case 'group':
-          return (
-            <div key={element.id} 
-            // style={{ marginLeft: 16, marginBottom: 8, borderLeft: '2px solid #eee', paddingLeft: 8 }}
-            style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, marginBottom: 16 }}
-            >
-              <label style={{ fontWeight: 'bold' }}>{element.label}</label>
-              <button onClick={() => {}}>↑</button>
-              <button onClick={() => {}}>↓</button>
-              <div style={{ marginTop: 4 }}>
-                {element.children && element.children.map((childId, index) => renderGroup(childId, index))}
-              </div>
-            </div>
-          );
-        case 'repeater':
-          // Basic repeater rendering - needs more complex logic for add/remove instances
-          return (
-            <div key={element.id} style={{ border: '1px dashed #ccc', padding: 16, marginBottom: 16 }}>
-              <h4 style={{ marginTop: 0 }}>{element.label}</h4>
-              {element.description && <p style={{ fontSize: '0.9em', color: '#666' }}>{element.description}</p>}
-              <div style={{ paddingLeft: 8 }}>
-                {/* For simplicity, render one instance for now. Add/Remove functionality would go here */}
-                {element.children && element.children.map(childId => renderGroup(childId))}
-              </div>
-            </div>
-          );
-        default:
-          return (
-            <div key={element.id} style={{ marginBottom: 12, color: 'orange' }}>
-              Unsupported container type: {element.type} (ID: {element.id})
-            </div>
-          );
-      }
+      return (
+        <RenderGroup
+          key={elementId}
+          elementId={elementId}
+          parentId={parentId}
+          currentIndex={index}
+          stepsBlocksData={stepsBlocksData}
+          formValues={formValues}
+          handleInputChange={handleInputChange}
+          handleChangeSequence={() => {}} 
+          checkCondition={() => true} 
+          handleOpenModal={handleOpenModal}
+        />
+      );
     }
 
     return (
       <form>
-        {stepsBlocksData.steps.root.map((rootId, index) => renderGroup(rootId, index))}
+        {stepsBlocksData.steps.root.map((rootId, index) => renderGroup(rootId, index, 'root'))}
       </form>
     );
   }
 
   return (
-    <div style={{ display: 'flex', height: '80vh', gap: 24 }}>
+    <>
+      <FieldModal 
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSaveModal}
+        initialData={modalConfig.data}
+        mode={modalConfig.mode}
+      />
+      <div style={{ display: 'flex', height: '80vh', gap: 24 }}>
       {/* JSON Editor Block */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <h3>JSON Editor (inputGroups)</h3>
@@ -235,28 +251,19 @@ useEffect(()=>{
         stepsBlocksData ?  <div style={{ flex: 1, background: '#fafafa', borderRadius: 8, padding: 16, overflowY: 'auto', boxShadow: '0 2px 8px #0001' }}>
         <h3>Preview Form ({stepsBlocksData.title})</h3>
         {previewForm(stepsBlocksData)}
-        {/* <h4 style={{ marginTop: 24 }}>Form Values</h4>
-        <pre style={{ background: '#f4f4f4', padding: 8, borderRadius: 4, fontSize: 13 }}>
-          {JSON.stringify(formValues, null, 2)}
-        </pre> */}
         <h4 style={{ marginTop: 24 }}>Transformed Steps & Blocks</h4>
         <pre style={{ background: '#f0f8ff', padding: 8, borderRadius: 4, fontSize: 12, maxHeight: 200, overflowY: 'auto' }}>
           {JSON.stringify(stepsBlocksData, null, 2)}
         </pre>
-        {/* <h4 style={{ marginTop: 16 }}>Transformed Blocks (Sample)</h4>
-        <pre style={{ background: '#fff8f0', padding: 8, borderRadius: 4, fontSize: 12, maxHeight: 300, overflowY: 'auto' }}>
-          {JSON.stringify(Object.fromEntries(Object.entries(blocks).slice(0, 5)), null, 2)}
-        </pre> */}
       </div> : <p>Loading...</p>
       }
      
-    </div>
+      </div>
+    </>
   );
 };
 
 export default Form
-
-
 //   const result = {};
 //   for (const group of groups) {
 //     let fullKey;
