@@ -1,10 +1,8 @@
 import RenderGroup from "./RenderGroup";
-import AddFieldModal from './AddFieldModel';
+// import AddFieldModal from './AddFieldModel';
 import { useState } from 'react';
 
-const PreviewForm = ({ stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence,setStepsBlocksData}) => {
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [addToGroup, setAddToGroup] = useState(null);
+const PreviewForm = ({ stepsBlocksData, formValues, handleOpenModal, handleInputChange, handleChangeSequence, setStepsBlocksData }) => {
 
     const checkCondition = (condition) => {
 
@@ -38,10 +36,7 @@ const PreviewForm = ({ stepsBlocksData, formValues, handleEdit, handleInputChang
       marginBottom: 12
     }}>
       <h3 style={{ margin: 0 }}>Preview Form ({stepsBlocksData?.title})</h3>
-      <button type="button" onClick={() => {
-        setAddToGroup('root'); 
-        setShowAddModal(true);
-      }}>Add Field</button>
+      <button type="button" onClick={() => handleOpenModal('add', 'root')}>Add Field</button>
 
     </div>
 
@@ -54,22 +49,14 @@ const PreviewForm = ({ stepsBlocksData, formValues, handleEdit, handleInputChang
           currentIndex={index}
           stepsBlocksData={stepsBlocksData}
           formValues={formValues}
-          handleEdit={handleEdit}
+          handleOpenModal={handleOpenModal}
           handleInputChange={handleInputChange}
           handleChangeSequence={handleChangeSequence}
           checkCondition={checkCondition}
-          setShowAddModal={setShowAddModal}
-          setAddToGroup={setAddToGroup}
         />
       ))}
     </form>
-    {showAddModal && (
-  <AddFieldModal
-    parentId={addToGroup}
-    setShowAddModal={setShowAddModal}
-    setStepsBlocksData={setStepsBlocksData}
-  />
-)}
+
 
   </div>
 );
