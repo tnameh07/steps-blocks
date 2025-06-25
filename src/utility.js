@@ -236,14 +236,13 @@ export const defaultInputGroups = [
   label: "State",
   inputType: "dynamic",
   required: true,
-  dependsOn: ["country"],
+  dependsOn: ["country", "subscribe"],
   sourceCode: "try { if (!inputData.country) { return []; } const res = await fetch(`https://flow.sokt.io/func/scriEozEsv6d/?fields=state&country=${inputData.country}`); if (!res.ok) { return []; } const states = await res.json(); return states; } catch (e) { console.error(e); return []; }",
-  visibleIf: {
-    field: "country",
-    operator: "notEquals",
-    value: ""
-  }
+  visibilityCode: `
+    return inputData.country === "India" && inputData.subscribe === true;
+  `
 },
+
 ];
 
 export function creatingBlock(groups, parentKey) {
