@@ -73,7 +73,7 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                         disabled={isDisabled}
                         style={{ width: 'auto', padding: 8, border: '1px solid #ccc', borderRadius: 4 }}
                     />
-                    <button type="button" onClick={() => handleEdit(element.id)} style={{ display: 'flex', alignItems: 'center', padding: 4 }}><Pencil size={16} /></button>
+                    <button type="button" onClick={() => handleEdit(fieldId)} style={{ display: 'flex', alignItems: 'center', padding: 4 }}><Pencil size={16} /></button>
                     <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'up')} disabled={!canMoveUp}>↑</button>
                     <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'down')} disabled={!canMoveDown}>↓</button>
                     {element.description && <p style={{ fontSize: '0.8em', color: '#888', marginTop: 4 }}>{element.description}</p>}
@@ -101,7 +101,7 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                             </label>
                         ))}
                     </div>
-                    <button type="button" onClick={() => handleEdit(element.id)} style={{ display: 'flex', alignItems: 'center', padding: 4 }}><Pencil size={16} /></button>
+                    <button type="button" onClick={() => handleEdit(fieldId)} style={{ display: 'flex', alignItems: 'center', padding: 4 }}><Pencil size={16} /></button>
                     <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'up')} disabled={!canMoveUp}>↑</button>
                     <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'down')} disabled={!canMoveDown}>↓</button>
                 </div>
@@ -120,7 +120,7 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                         />
                         {element.label} {element.required && <span style={{ color: 'red' }}>*</span>}
                     </label>
-                    <button type="button" onClick={() => handleEdit(element.id)} style={{ display: 'flex', alignItems: 'center', padding: 4 }}><Pencil size={16} /></button>
+                    <button type="button" onClick={() => handleEdit(fieldId)} style={{ display: 'flex', alignItems: 'center', padding: 4 }}><Pencil size={16} /></button>
                     <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'up')} disabled={!canMoveUp}>↑</button>
                     <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'down')} disabled={!canMoveDown}>↓</button>
                 </div>
@@ -143,7 +143,7 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
                     </select>
-                    <button type="button" onClick={() => handleEdit(element.id)} style={{ display: 'flex', alignItems: 'center', padding: 4 }}><Pencil size={16} /></button>
+                    <button type="button" onClick={() => handleEdit(fieldId)} style={{ display: 'flex', alignItems: 'center', padding: 4 }}><Pencil size={16} /></button>
                     <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'up')} disabled={!canMoveUp}>↑</button>
                     <button type='button' onClick={() => handleChangeSequence(parentId, fieldId, 'down')} disabled={!canMoveDown}>↓</button>
                 </div>
