@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { extractDependsOnKeysFromCode, handleEditFieldChange } from "./utility";
 
-const EditModel = ({ editPath, editData, setStepsBlocksData, stepsBlocksData,setShowEditModal, setEditData, allFieldIds }) => {
+const EditModel = ({ editPath, editData, setStepsBlocksData, stepsBlocksData, setShowEditModal, setEditData, allFieldIds }) => {
     const [localEditData, setLocalEditData] = useState(editData);
     const [isLoading, setIsLoading] = useState(false);
     const [isOptionsCodeMode, setIsOptionsCodeMode] = useState(false); // State for options code mode
@@ -10,32 +11,11 @@ const EditModel = ({ editPath, editData, setStepsBlocksData, stepsBlocksData,set
     // Input types for the inputType field
     const inputTypes = ["static", "dynamic"];
 
-    const handleFieldChange = useCallback((fieldKey, newValue) => {
-        setLocalEditData(prev => {
-            const newLocalEditData = { ...prev, [fieldKey]: newValue };
-
-            // Special handling for type change:
-            // If type changes to something that doesn't need options, clear them
-            if (fieldKey === "type") {
-                if (!["select", "radio", "multichoice"].includes(newValue)) {
-                    delete newLocalEditData.options;
-                } else if (!newLocalEditData.options) {
-                    // If type changes to something that needs options and they don't exist, initialize
-                    newLocalEditData.options = [];
-                }
-            }
-
-            // Special handling for inputType change:
-            // If inputType changes from dynamic, clear sourceCode
-            if (fieldKey === "inputType" && newValue !== "dynamic") {
-                delete newLocalEditData.sourceCode;
-            } else if (fieldKey === "inputType" && newValue === "dynamic" && !newLocalEditData.sourceCode) {
-                 newLocalEditData.sourceCode = ""; // Initialize sourceCode if it's dynamic and not present
-            }
-            
-            return newLocalEditData;
-        });
-    }, []);
+    const handleFieldChange = (fieldKey, newValue) => {
+        if (fieldKey && newValue) {
+            handleEditFieldChange(fieldKey, newValue, setLocalEditData)
+        }
+    }
 
     const handleOptionChange = useCallback((index, field, value) => {
         setLocalEditData(prev => {
@@ -61,27 +41,12 @@ const EditModel = ({ editPath, editData, setStepsBlocksData, stepsBlocksData,set
     }, []);
 
     const handleSave = () => {
-        
-
-
-function extractDependsOnKeysFromCode(codeString) {
-    // console.log(codeString);
-  const regex = /inputData\.([a-zA-Z0-9_]+)/g;
-  const matches = [...codeString.matchAll(regex)];
-  const keys = matches.map(match => match[1]);
-  return Array.from(new Set(keys));
-}
-
-const sourceCode = stepsBlocksData.blocks[editPath].sourceCode || '';
-const visibilityCode = stepsBlocksData.blocks[editPath].visibilityCode || '';
-const sourceKeys = extractDependsOnKeysFromCode(sourceCode);
-const visibleKeys = extractDependsOnKeysFromCode(visibilityCode);
-console.log("Extracted Keys from sourceCode:", sourceKeys);
-console.log("Extracted Keys from visibilitycode:", visibleKeys);
-
-
-
-
+        const sourceCode = stepsBlocksData.blocks[editPath].sourceCode || '';
+        const visibilityCode = stepsBlocksData.blocks[editPath].visibilityCode || '';
+        const sourceKeys = extractDependsOnKeysFromCode(sourceCode);
+        const visibleKeys = extractDependsOnKeysFromCode(visibilityCode);
+        console.log("Extracted Keys from sourceCode:", sourceKeys);
+        console.log("Extracted Keys from visibilitycode:", visibleKeys);
 
         if (!localEditData) return;
         setIsLoading(true);
@@ -108,12 +73,11 @@ console.log("Extracted Keys from visibilitycode:", visibleKeys);
     useEffect(() => {
         setLocalEditData(JSON.parse(JSON.stringify(editData)));
         // Reset options code mode when editData changes
-        setIsOptionsCodeMode(false); 
+        setIsOptionsCodeMode(false);
     }, [editData]);
 
     const isFieldDisabled = (fieldKey) => {
-        if (fieldKey === "id" || fieldKey === "key") return true;
-        
+        if (fieldKey === "id" || fieldKey === "key") return true
         // Options and children logic
         const requiresOptions = ["select", "radio", "multichoice"].includes(localEditData.type);
         if (fieldKey === "options" && !requiresOptions) return true;
@@ -194,7 +158,6 @@ console.log("Extracted Keys from visibilitycode:", visibleKeys);
         // Options editing based on type and inputType
         if (key === "options" && ["select", "radio", "multichoice"].includes(localEditData.type)) {
             const isStaticInputType = localEditData.inputType === "static";
-            
             if (!isStaticInputType) {
                 return <span style={{ color: "#888", flex: 1 }}>Options only editable for static inputType.</span>;
             }
@@ -333,7 +296,6 @@ console.log("Extracted Keys from visibilitycode:", visibleKeys);
                 );
             }
         }
-        
         // Basic text input for other fields (e.g., id, key, label, placeholder, description)
         return (
             <input
@@ -371,7 +333,6 @@ console.log("Extracted Keys from visibilitycode:", visibleKeys);
                 }}
             >
                 <h3 style={{ marginBottom: 20 }}>Edit Field</h3>
-
                 <form>
                     {Object.entries(localEditData).map(([key, value]) => (
                         <div
