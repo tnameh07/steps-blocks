@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 
-const EditModel = ({ editPath, editData, setStepsBlocksData, setShowEditModal, setEditData, allFieldIds }) => {
+const EditModel = ({ editPath, editData, setStepsBlocksData, stepsBlocksData,setShowEditModal, setEditData, allFieldIds }) => {
     const [localEditData, setLocalEditData] = useState(editData);
     const [isLoading, setIsLoading] = useState(false);
     const [isOptionsCodeMode, setIsOptionsCodeMode] = useState(false); // State for options code mode
@@ -61,6 +61,28 @@ const EditModel = ({ editPath, editData, setStepsBlocksData, setShowEditModal, s
     }, []);
 
     const handleSave = () => {
+        
+
+
+function extractDependsOnKeysFromCode(codeString) {
+    // console.log(codeString);
+  const regex = /inputData\.([a-zA-Z0-9_]+)/g;
+  const matches = [...codeString.matchAll(regex)];
+  const keys = matches.map(match => match[1]);
+  return Array.from(new Set(keys));
+}
+
+const sourceCode = stepsBlocksData.blocks[editPath].sourceCode || '';
+const visibilityCode = stepsBlocksData.blocks[editPath].visibilityCode || '';
+const sourceKeys = extractDependsOnKeysFromCode(sourceCode);
+const visibleKeys = extractDependsOnKeysFromCode(visibilityCode);
+console.log("Extracted Keys from sourceCode:", sourceKeys);
+console.log("Extracted Keys from visibilitycode:", visibleKeys);
+
+
+
+
+
         if (!localEditData) return;
         setIsLoading(true);
 

@@ -53,10 +53,11 @@ const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formVa
                 try {
                     let data;
                     if (element.dependsOn && element.dependsOn.length > 0) {
-                        const inputData = {};
-                        element.dependsOn.forEach(depKey => {
-                            inputData[depKey] = formValues[depKey] || null;
-                        });
+                        const inputData = formValues;
+                        console.log("Form:",inputData);
+                        // element.dependsOn.forEach(depKey => {
+                        //     inputData[depKey] = formValues[depKey] || null;
+                        // });
                         data = await eval(`(async (inputData) => { ${element.sourceCode} })`)(inputData);
                     } else {
                         data = await eval(`(async () => { ${element.sourceCode} })()`);

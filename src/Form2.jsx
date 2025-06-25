@@ -142,6 +142,7 @@ const Form = () => {
           editPath={editPath}
           setEditData={setEditData}
           editData={editData}
+          stepsBlocksData={stepsBlocksData}
           setStepsBlocksData={setStepsBlocksData}
           setShowEditModal={setShowEditModal} />}
     </div>
