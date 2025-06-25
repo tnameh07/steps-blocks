@@ -2,7 +2,33 @@
 import { Pencil } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence, checkCondition }) => {
+
+const evaluateVisibility = (element, formValues) => {
+    if (!element.visibilityCode) return true; // default to visible if no code provided
+    // console.log("FormValuescdcedcew:",formValues);
+    
+    try {
+        const inputData = {};
+        (element.dependsOn || []).forEach(dep => {
+            inputData[dep] = formValues[dep];
+        });
+        // console.log("FormValues:",inputData);
+
+    // Evaluate the visibilityCode
+    return eval(`
+      (() => {
+        const inputData = ${JSON.stringify(inputData)};
+        ${element.visibilityCode}
+      })()
+    `);
+  } catch (error) {
+    console.error("Visibility evaluation failed:", error);
+    return false;
+  }
+};
+
+const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formValues, handleEdit, handleInputChange, handleChangeSequence,setStepsBlocksData, checkCondition }) => {
+
 
     const isVisible = !element.visibleIf || checkCondition(element.visibleIf);
     const isDisabled = element.disabledIf && checkCondition(element.disabledIf);
@@ -126,7 +152,12 @@ const RenderField = ({ element, parentId, currentIndex, stepsBlocksData, formVal
                 </div>
             );
 
-        case 'select': {
+        case 'select': 
+        {
+            if(element.inputType === 'dynamic'){
+                const isVisible = evaluateVisibility(element, formValues);
+                if(!isVisible) return null;
+                }
             return (
                 <div key={element.id} id={fieldId} className={`field-${element.type}`} style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <label style={{ display: 'block', marginBottom: 4 }}>
