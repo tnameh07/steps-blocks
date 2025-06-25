@@ -11,6 +11,7 @@ export const defaultInputGroups = [
         type: "text",
         inputType: "text",
         label: "Full Name",
+        inputType: "static",
         placeholder: "John Doe",
         required: true,
         validation: { minLength: 2, maxLength: 50 }
@@ -27,6 +28,7 @@ export const defaultInputGroups = [
   key: "child1",
   type: "select",
   label: "Child 1",
+  inputType: "static",
   options: [
     { value: "optin", label: "Email" },
     { value: "phone", label: "Phone" },
@@ -66,6 +68,7 @@ export const defaultInputGroups = [
       key: "gender",
       type: "radio",
       label: "Gender",
+      inputType: "static",
       options: [
         { value: "male", label: "Male" },
         { value: "female", label: "Female" },
@@ -84,6 +87,7 @@ export const defaultInputGroups = [
       key: "contactMethod",
       type: "select",
       label: "Preferred Contact",
+      inputType: "static",
       options: [
         { value: "email", label: "Email" },
         { value: "phone", label: "Phone" },
@@ -138,6 +142,7 @@ export const defaultInputGroups = [
     id: "work-experience",
     type: "group",
     label: "Work Experience",
+    
     description: "List of past jobs",
     children: [
       {
@@ -154,6 +159,7 @@ export const defaultInputGroups = [
         type: "text",
         inputType: "text",
         label: "Role",
+        inputType: "static",
         required: true,
         visibleIf: {
         field: "company",
@@ -187,6 +193,7 @@ export const defaultInputGroups = [
       key: "feedback",
       type: "select",
       label: "Feedback",
+      inputType: "static",
       options: [
         { value: "positive", label: "Positve" },
         { value: "negative", label: "Negative" },
@@ -199,6 +206,7 @@ export const defaultInputGroups = [
   key: "other",
   type: "text",
   label: "Other :Please Specify",
+  inputType: "static",
   required: true,
   visibleIf: {
         field: "feedback",
