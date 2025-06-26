@@ -39,7 +39,7 @@ const RenderField =  ({ element, parentId, currentIndex, stepsBlocksData, formVa
 
     const fieldId = (parentId !== 'root') ? `${parentId}.${element.id}` : `${element.id}`;
     // console.log("ParentId:",parentId);
-    console.log("FieldId:",fieldId);
+    // console.log("FieldId:",fieldId);
     const canMoveUp = currentIndex > 0;
     const canMoveDown = currentIndex < (stepsBlocksData.steps[parentId]?.length - 1);
 

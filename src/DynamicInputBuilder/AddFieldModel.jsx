@@ -28,14 +28,15 @@ const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
       visibleIf: null,
       disabledIf: null,
     };
+    console.log("New Field:",newField,parentId);
     setStepsBlocksData(prev => {
       const updated = { ...prev };
       
       // Determine final ID based on parentId
       const finalId = parentId === "root" ? id : `${parentId}.${id}`;
-
+      console.log("Field:",finalId);
       // 1️⃣ Add the new field to blocks with correct finalId
-      updated.blocks[finalId] = { ...newField, id: finalId };
+      updated.blocks[finalId] = { ...newField};
 
       // 2️⃣ Add the field ID to parent's children only if parent is not root
       if (parentId !== "root" && updated.blocks[parentId]) {
