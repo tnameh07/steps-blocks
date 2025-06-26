@@ -7,12 +7,14 @@ const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
   const labelRef = useRef();
   const typeRef = useRef();
 
-  const handleSave = () => {
+  const AddhandleSave = () => {
+    console.log("Parent:",parentId)
     const id = idRef.current.value.trim();
     const key = keyRef.current.value.trim();
     const label = labelRef.current.value.trim();
     const type = typeRef.current.value;
 
+    
     if (!id || !key || !label || !type) return;
 
     const newField = {
@@ -26,18 +28,32 @@ const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
       visibleIf: null,
       disabledIf: null,
     };
-  
     setStepsBlocksData(prev => {
       const updated = { ...prev };
-      updated.blocks[id] = newField;
+      
+      // Determine final ID based on parentId
+      const finalId = parentId === "root" ? id : `${parentId}.${id}`;
 
+      // 1️⃣ Add the new field to blocks with correct finalId
+      updated.blocks[finalId] = { ...newField, id: finalId };
+
+      // 2️⃣ Add the field ID to parent's children only if parent is not root
+      if (parentId !== "root" && updated.blocks[parentId]) {
+        if (!Array.isArray(updated.blocks[parentId].children)) {
+          updated.blocks[parentId].children = [];
+        }
+        updated.blocks[parentId].children.push(finalId);
+      }
+
+      // 3️⃣ Add the field ID to steps[parentId]
       if (!updated.steps[parentId]) {
         updated.steps[parentId] = [];
       }
-      updated.steps[parentId].push(id);
+      updated.steps[parentId].push(finalId);
 
       return updated;
     });
+
 
     setShowAddModal(false);
   };
@@ -70,7 +86,7 @@ const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
           </select>
         </div>
 
-        <button onClick={handleSave}>Save</button>
+        <button onClick={AddhandleSave}>Save</button>
         <button onClick={() => setShowAddModal(false)} style={{ marginLeft: 8 }}>Cancel</button>
       </div>
     </div>

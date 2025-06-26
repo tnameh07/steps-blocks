@@ -63,23 +63,26 @@ const EditModel = ({ editPath, editData, setStepsBlocksData, stepsBlocksData,set
     const handleSave = () => {
         
 
+        const element = stepsBlocksData.blocks[editPath];
+        function extractDependsOnKeysFromCode(codeString) {
+            // console.log(codeString);
+        const regex = /inputData\.([a-zA-Z0-9_]+)/g;
+        const matches = [...codeString.matchAll(regex)];
+        const keys = matches.map(match => match[1]);
+        return Array.from(new Set(keys));
+        }
 
-function extractDependsOnKeysFromCode(codeString) {
-    // console.log(codeString);
-  const regex = /inputData\.([a-zA-Z0-9_]+)/g;
-  const matches = [...codeString.matchAll(regex)];
-  const keys = matches.map(match => match[1]);
-  return Array.from(new Set(keys));
-}
-
-const sourceCode = stepsBlocksData.blocks[editPath].sourceCode || '';
-const visibilityCode = stepsBlocksData.blocks[editPath].visibilityCode || '';
-const sourceKeys = extractDependsOnKeysFromCode(sourceCode);
-const visibleKeys = extractDependsOnKeysFromCode(visibilityCode);
-console.log("Extracted Keys from sourceCode:", sourceKeys);
-console.log("Extracted Keys from visibilitycode:", visibleKeys);
-
-
+        const sourceCode = element.sourceCode || '';
+        const visibilityCode = element.visibilityCode || '';
+        const sourceKeys = extractDependsOnKeysFromCode(sourceCode);
+        const visibleKeys = extractDependsOnKeysFromCode(visibilityCode);
+        const dependsOn = Array.from(new Set([...sourceKeys, ...visibleKeys]));
+        // console.log("Extracted Keys from sourceCode:", sourceKeys);
+        // console.log("Extracted Keys from visibilitycode:", visibleKeys);
+        // console.log("Combined dependsOn keys:", dependsOn);
+        // ✅ Inject dependsOn into localEditData
+        localEditData.dependsOn = dependsOn;
+        // console.log("localEditData:",localEditData);
 
 
 
@@ -103,6 +106,7 @@ console.log("Extracted Keys from visibilitycode:", visibleKeys);
         } finally {
             setIsLoading(false);
         }
+        // console.log("stepsBlocks:",stepsBlocksData.blocks);
     };
 
     useEffect(() => {
