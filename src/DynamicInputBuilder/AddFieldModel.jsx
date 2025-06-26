@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef , useState} from "react";
 
 const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
   
@@ -6,6 +6,9 @@ const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
   const keyRef = useRef();
   const labelRef = useRef();
   const typeRef = useRef();
+
+  const [inputType, setInputType] = useState("static"); // ✅ state for inputType
+  const [sourceCode, setSourceCode] = useState(""); // ✅ state for sourceCode editor
 
   const AddhandleSave = () => {
     console.log("Parent:",parentId)
@@ -28,6 +31,28 @@ const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
       visibleIf: null,
       disabledIf: null,
     };
+
+    //to include depends on array in object
+    // ✅ Include inputType if not static
+    if (inputType === "dynamic") {
+      newField.inputType = "dynamic";
+      newField.sourceCode = sourceCode;
+
+      // ✅ extract dependsOn keys from sourceCode
+      function extractDependsOnKeysFromCode(codeString) {
+        const regex = /inputData\.([a-zA-Z0-9_]+)/g;
+        const matches = [...codeString.matchAll(regex)];
+        const keys = matches.map(match => match[1]);
+        return Array.from(new Set(keys));
+      }
+
+      newField.dependsOn = extractDependsOnKeysFromCode(sourceCode);
+      console.log("DependsOn:",newField.dependsOn);
+    } else {
+      newField.inputType = "static"; // optional but consistent
+    }
+
+
     console.log("New Field:",newField,parentId);
     setStepsBlocksData(prev => {
       const updated = { ...prev };
@@ -86,6 +111,43 @@ const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
             <option value="select">Select</option>
           </select>
         </div>
+
+        {/* ✅ NEW: Input Type */}
+        <div style={{ marginBottom: 10 }}>
+          <label>Input Type</label>
+          <select
+            value={inputType}
+            onChange={(e) => setInputType(e.target.value)}
+            style={{ width: '100%', padding: 6 }}
+          >
+            <option value="static">Static</option>
+            <option value="dynamic">Dynamic</option>
+          </select>
+        </div>
+
+        {/* ✅ NEW: Show based on InputType */}
+        {inputType === "dynamic" ? (
+          <div style={{ marginBottom: 10 }}>
+            <label>Source Code</label>
+            <textarea
+              value={sourceCode}
+              onChange={(e) => setSourceCode(e.target.value)}
+              placeholder="return [{ value: 'a', label: 'A' }]"
+              style={{
+                width: '100%',
+                padding: 6,
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                minHeight: 100
+              }}
+            />
+          </div>
+        ) : (
+          <div style={{ marginBottom: 10 }}>
+            <label>Options</label>
+            <p style={{ fontSize: '0.9em', color: '#666' }}>Option editing will be available in Edit screen.</p>
+          </div>
+        )}
 
         <button onClick={AddhandleSave}>Save</button>
         <button onClick={() => setShowAddModal(false)} style={{ marginLeft: 8 }}>Cancel</button>
