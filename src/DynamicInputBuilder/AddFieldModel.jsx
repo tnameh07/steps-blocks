@@ -1,5 +1,5 @@
 import React, { useRef , useState} from "react";
-
+import { extractDependsOnKeysFromCode } from "../utility";
 const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
   
   const idRef = useRef();
@@ -7,8 +7,8 @@ const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
   const labelRef = useRef();
   const typeRef = useRef();
 
-  const [inputType, setInputType] = useState("static"); // ✅ state for inputType
-  const [sourceCode, setSourceCode] = useState(""); // ✅ state for sourceCode editor
+  const [inputType, setInputType] = useState("static");
+  const [sourceCode, setSourceCode] = useState("");
 
   const AddhandleSave = () => {
     console.log("Parent:",parentId)
@@ -38,13 +38,13 @@ const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
       newField.inputType = "dynamic";
       newField.sourceCode = sourceCode;
 
-      // ✅ extract dependsOn keys from sourceCode
-      function extractDependsOnKeysFromCode(codeString) {
-        const regex = /inputData\.([a-zA-Z0-9_]+)/g;
-        const matches = [...codeString.matchAll(regex)];
-        const keys = matches.map(match => match[1]);
-        return Array.from(new Set(keys));
-      }
+      // // ✅ extract dependsOn keys from sourceCode
+      // function extractDependsOnKeysFromCode(codeString) {
+      //   const regex = /inputData\.([a-zA-Z0-9_]+)/g;
+      //   const matches = [...codeString.matchAll(regex)];
+      //   const keys = matches.map(match => match[1]);
+      //   return Array.from(new Set(keys));
+      // }
 
       newField.dependsOn = extractDependsOnKeysFromCode(sourceCode);
       console.log("DependsOn:",newField.dependsOn);

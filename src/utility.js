@@ -381,3 +381,40 @@ export function reconstructInputGroups(stepsBlocksData) {
   const reconstructed = steps.root.map(rootKey => buildGroup(rootKey));
   return reconstructed;
 }
+
+export const handleEditFieldChange = (fieldKey, newValue , setLocalEditData) => {
+  setLocalEditData(prev => {
+      const newLocalEditData = { ...prev, [fieldKey]: newValue };
+
+      // Special handling for type change:
+      // If type changes to something that doesn't need options, clear them
+      if (fieldKey === "type") {
+          if (!["select", "radio", "multichoice"].includes(newValue)) {
+              delete newLocalEditData.options;
+          } else if (!newLocalEditData.options) {
+              // If type changes to something that needs options and they don't exist, initialize
+              newLocalEditData.options = [];
+          }
+      }
+
+      // Special handling for inputType change:
+      // If inputType changes from dynamic, clear sourceCode
+      if (fieldKey === "inputType" && newValue !== "dynamic") {
+          delete newLocalEditData.sourceCode;
+      } else if (fieldKey === "inputType" && newValue === "dynamic" && !newLocalEditData.sourceCode) {
+           newLocalEditData.sourceCode = ""; // Initialize sourceCode if it's dynamic and not present
+      }
+      
+      return newLocalEditData;
+  });
+}
+
+export function extractDependsOnKeysFromCode(codeString) {
+  console.log(codeString);
+  const regex = /inputData\.([a-zA-Z0-9_]+)/g;
+  const matches = [...codeString.matchAll(regex)];
+  const keys = matches.map(match => match[1]);
+  const result = Array.from(new Set(keys));
+  console.log("result : ",result)
+  return result;
+}
