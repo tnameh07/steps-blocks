@@ -41,13 +41,15 @@ const EditModel = ({ editPath, editData, setStepsBlocksData, stepsBlocksData, se
     }, []);
 
     const handleSave = () => {
-        const sourceCode = stepsBlocksData.blocks[editPath].sourceCode || '';
-        const visibilityCode = stepsBlocksData.blocks[editPath].visibilityCode || '';
+        const element = localEditData // stepsBlocksData.blocks[editPath];
+        const sourceCode = element.sourceCode || '';
+        const visibilityCode = element.visibilityCode || '';
         const sourceKeys = extractDependsOnKeysFromCode(sourceCode);
         const visibleKeys = extractDependsOnKeysFromCode(visibilityCode);
-        console.log("Extracted Keys from sourceCode:", sourceKeys);
-        console.log("Extracted Keys from visibilitycode:", visibleKeys);
+        const dependsOn = Array.from(new Set([...sourceKeys, ...visibleKeys]));
 
+
+        localEditData.dependsOn = dependsOn;
         if (!localEditData) return;
         setIsLoading(true);
 
@@ -68,6 +70,7 @@ const EditModel = ({ editPath, editData, setStepsBlocksData, stepsBlocksData, se
         } finally {
             setIsLoading(false);
         }
+        // console.log("stepsBlocks:",stepsBlocksData.blocks);
     };
 
     useEffect(() => {

@@ -101,8 +101,8 @@ const Form = () => {
     
     if (stepsBlocksData) {
       const newInputGroups = reconstructInputGroups(stepsBlocksData);
+      console.log("Blocks:",stepsBlocksData);
       // setInputGroups(newInputGroups);
-      
       setJsonText(JSON.stringify(newInputGroups, null, 2));
       isUpdatingFromGui.current = false;
     }

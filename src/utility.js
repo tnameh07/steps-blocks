@@ -410,9 +410,11 @@ export const handleEditFieldChange = (fieldKey, newValue , setLocalEditData) => 
 }
 
 export function extractDependsOnKeysFromCode(codeString) {
-  // console.log(codeString);
-const regex = /inputData\.([a-zA-Z0-9_]+)/g;
-const matches = [...codeString.matchAll(regex)];
-const keys = matches.map(match => match[1]);
-return Array.from(new Set(keys));
+  console.log(codeString);
+  const regex = /inputData\.([a-zA-Z0-9_]+)/g;
+  const matches = [...codeString.matchAll(regex)];
+  const keys = matches.map(match => match[1]);
+  const result = Array.from(new Set(keys));
+  console.log("result : ",result)
+  return result;
 }

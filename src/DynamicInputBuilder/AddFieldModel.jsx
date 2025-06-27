@@ -1,5 +1,5 @@
-import React, { useRef } from "react";
-
+import React, { useRef , useState} from "react";
+import { extractDependsOnKeysFromCode } from "../utility";
 const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
   
   const idRef = useRef();
@@ -7,12 +7,17 @@ const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
   const labelRef = useRef();
   const typeRef = useRef();
 
-  const handleSave = () => {
+  const [inputType, setInputType] = useState("static");
+  const [sourceCode, setSourceCode] = useState("");
+
+  const AddhandleSave = () => {
+    console.log("Parent:",parentId)
     const id = idRef.current.value.trim();
     const key = keyRef.current.value.trim();
     const label = labelRef.current.value.trim();
     const type = typeRef.current.value;
 
+    
     if (!id || !key || !label || !type) return;
 
     const newField = {
@@ -26,18 +31,55 @@ const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
       visibleIf: null,
       disabledIf: null,
     };
-  
+
+    //to include depends on array in object
+    // ✅ Include inputType if not static
+    if (inputType === "dynamic") {
+      newField.inputType = "dynamic";
+      newField.sourceCode = sourceCode;
+
+      // // ✅ extract dependsOn keys from sourceCode
+      // function extractDependsOnKeysFromCode(codeString) {
+      //   const regex = /inputData\.([a-zA-Z0-9_]+)/g;
+      //   const matches = [...codeString.matchAll(regex)];
+      //   const keys = matches.map(match => match[1]);
+      //   return Array.from(new Set(keys));
+      // }
+
+      newField.dependsOn = extractDependsOnKeysFromCode(sourceCode);
+      console.log("DependsOn:",newField.dependsOn);
+    } else {
+      newField.inputType = "static"; // optional but consistent
+    }
+
+
+    console.log("New Field:",newField,parentId);
     setStepsBlocksData(prev => {
       const updated = { ...prev };
-      updated.blocks[id] = newField;
+      
+      // Determine final ID based on parentId
+      const finalId = parentId === "root" ? id : `${parentId}.${id}`;
+      console.log("Field:",finalId);
+      // 1️⃣ Add the new field to blocks with correct finalId
+      updated.blocks[finalId] = { ...newField};
 
+      // 2️⃣ Add the field ID to parent's children only if parent is not root
+      if (parentId !== "root" && updated.blocks[parentId]) {
+        if (!Array.isArray(updated.blocks[parentId].children)) {
+          updated.blocks[parentId].children = [];
+        }
+        updated.blocks[parentId].children.push(finalId);
+      }
+
+      // 3️⃣ Add the field ID to steps[parentId]
       if (!updated.steps[parentId]) {
         updated.steps[parentId] = [];
       }
-      updated.steps[parentId].push(id);
+      updated.steps[parentId].push(finalId);
 
       return updated;
     });
+
 
     setShowAddModal(false);
   };
@@ -70,7 +112,44 @@ const AddFieldModal = ({ parentId, setShowAddModal, setStepsBlocksData }) => {
           </select>
         </div>
 
-        <button onClick={handleSave}>Save</button>
+        {/* ✅ NEW: Input Type */}
+        <div style={{ marginBottom: 10 }}>
+          <label>Input Type</label>
+          <select
+            value={inputType}
+            onChange={(e) => setInputType(e.target.value)}
+            style={{ width: '100%', padding: 6 }}
+          >
+            <option value="static">Static</option>
+            <option value="dynamic">Dynamic</option>
+          </select>
+        </div>
+
+        {/* ✅ NEW: Show based on InputType */}
+        {inputType === "dynamic" ? (
+          <div style={{ marginBottom: 10 }}>
+            <label>Source Code</label>
+            <textarea
+              value={sourceCode}
+              onChange={(e) => setSourceCode(e.target.value)}
+              placeholder="return [{ value: 'a', label: 'A' }]"
+              style={{
+                width: '100%',
+                padding: 6,
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                minHeight: 100
+              }}
+            />
+          </div>
+        ) : (
+          <div style={{ marginBottom: 10 }}>
+            <label>Options</label>
+            <p style={{ fontSize: '0.9em', color: '#666' }}>Option editing will be available in Edit screen.</p>
+          </div>
+        )}
+
+        <button onClick={AddhandleSave}>Save</button>
         <button onClick={() => setShowAddModal(false)} style={{ marginLeft: 8 }}>Cancel</button>
       </div>
     </div>
